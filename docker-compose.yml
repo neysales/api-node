@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - ConnectionStrings__PostgresConnection=Host=postgres;Database=agendero;Username=postgres;Password=06c0ab8ab1050cd9d6001ce3a89723c3
+      - Authentication__ApiKey=446AE6DD89E64F7F9D8964B595035644
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - agendero-net
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: agendero
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 06c0ab8ab1050cd9d6001ce3a89723c3
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agendero-net
+
+volumes:
+  postgres_data:
+
+networks:
+  agendero-net:
+    driver: bridge
