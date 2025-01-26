@@ -3,6 +3,7 @@ const router = express.Router();
 const { apiKeyAuth } = require('../middleware/auth');
 const Company = require('../models/Company');
 
+
 /**
  * @swagger
  * components:
