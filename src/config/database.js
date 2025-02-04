@@ -3,10 +3,10 @@ require('dotenv').config();
 
 const sequelize = new Sequelize({
   dialect: 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  database: 'agendero',
+  host: process.env.DB_HOST || '185.217.127.77',
+  database: 'agenda',
   username: 'postgres',
-  password: '06c0ab8ab1050cd9d6001ce3a89723c3',
+  password: '984011c5ca123ee9060092a2af946367',
   port: 5432,
   logging: false,
   define: {

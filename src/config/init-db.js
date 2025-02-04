@@ -5,11 +5,11 @@ require('dotenv').config();
 
 async function initializeDatabase() {
   const client = new Client({
-    host: process.env.DB_HOST || 'localhost',
+    host: process.env.DB_HOST || '185.217.127.77',
     user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || '06c0ab8ab1050cd9d6001ce3a89723c3',
+    password: process.env.DB_PASSWORD || '984011c5ca123ee9060092a2af946367',
     port: process.env.DB_PORT || 5432,
-    database: 'agendero'
+    database: 'agenda'
   });
 
   try {
