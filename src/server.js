@@ -4,19 +4,19 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
-const sequelize = require('./config/database');
+const { sequelize } = require('./models');
 const path = require('path');
 require('dotenv').config();
 
 const app = express();
 
 // Importar rotas
-const companiesRoutes = require('./routes/companies');
-const customersRoutes = require('./routes/customers');
-const attendantsRoutes = require('./routes/attendants');
-const appointmentsRoutes = require('./routes/appointments');
-const schedulesRoutes = require('./routes/schedules');
-const specialtiesRoutes = require('./routes/specialties');
+const empresaRoutes = require('./routes/empresaRoutes');
+const clienteRoutes = require('./routes/clienteRoutes');
+const atendenteRoutes = require('./routes/atendenteRoutes');
+const agendamentoRoutes = require('./routes/agendamentoRoutes');
+const especialidadeRoutes = require('./routes/especialidadeRoutes');
+const horarioRoutes = require('./routes/horarioRoutes');
 
 // Configuração do Swagger
 const swaggerOptions = {
@@ -72,16 +72,24 @@ const limiter = rateLimit({
 app.use(limiter);
 app.use(express.json());
 
+// Configurar para servir arquivos estáticos
+app.use(express.static('public'));
+
 // Configuração do Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
+// Rota para a documentação
+app.get('/docs', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/docs/index.html'));
+});
+
 // Registrar rotas
-app.use('/api/companies', companiesRoutes);
-app.use('/api/customers', customersRoutes);
-app.use('/api/attendants', attendantsRoutes);
-app.use('/api/appointments', appointmentsRoutes);
-app.use('/api/schedules', schedulesRoutes);
-app.use('/api/specialties', specialtiesRoutes);
+app.use('/api/empresas', empresaRoutes);
+app.use('/api/clientes', clienteRoutes);
+app.use('/api/atendentes', atendenteRoutes);
+app.use('/api/agendamentos', agendamentoRoutes);
+app.use('/api/especialidades', especialidadeRoutes);
+app.use('/api/horarios', horarioRoutes);
 
 // Rota de teste para verificar se a API está funcionando
 app.get('/api/health', (req, res) => {

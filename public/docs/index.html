@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentação API - Agendero</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            padding-top: 60px;
+        }
+        .navbar {
+            background-color: #2c3e50;
+        }
+        .navbar-brand {
+            color: white !important;
+            font-weight: bold;
+        }
+        .sidebar {
+            position: fixed;
+            top: 56px;
+            bottom: 0;
+            left: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            overflow-y: auto;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        .endpoint {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .method {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 3px;
+            color: white;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .get { background-color: #61affe; }
+        .post { background-color: #49cc90; }
+        .put { background-color: #fca130; }
+        .delete { background-color: #f93e3e; }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .nav-link {
+            color: #2c3e50;
+        }
+        .nav-link:hover {
+            color: #1a252f;
+        }
+        h2 {
+            margin-top: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Agendero API</a>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-3 col-lg-2 sidebar">
+                <div class="position-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#introducao">Introdução</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#autenticacao">Autenticação</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#empresas">Empresas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#clientes">Clientes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#atendentes">Atendentes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#agendamentos">Agendamentos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#especialidades">Especialidades</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#horarios">Horários</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#exemplos">Exemplos de Uso</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#erros">Códigos de Erro</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <h1>Documentação da API de Agendamento</h1>
+
+                <section id="introducao">
+                    <h2>Introdução</h2>
+                    <p>A API de Agendamento é um serviço RESTful que permite gerenciar empresas, clientes, atendentes e agendamentos. Todas as respostas são em formato JSON.</p>
+                    <div class="endpoint">
+                        <strong>URL Base:</strong>
+                        <code>http://localhost:3001</code> (desenvolvimento) ou <code>https://agendaapi.agendero.com</code> (produção)
+                    </div>
+                </section>
+
+                <section id="autenticacao">
+                    <h2>Autenticação</h2>
+                    <p>A API utiliza autenticação via chave API. Para todas as requisições (exceto criação de empresa), você deve incluir o header:</p>
+                    <pre><code>x-api-key: SUA_CHAVE_API_AQUI</code></pre>
+                    <p>Para obter sua chave API, primeiro crie uma empresa usando o endpoint <code>/empresas</code>.</p>
+                </section>
+
+                <section id="empresas">
+                    <h2>Empresas</h2>
+                    
+                    <div class="endpoint">
+                        <span class="method post">POST</span>
+                        <code>/empresas</code>
+                        <h4>Estrutura da Tabela:</h4>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Campo</th>
+                                    <th>Tipo</th>
+                                    <th>Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>id</td><td>UUID</td><td>Chave primária</td></tr>
+                                <tr><td>nome</td><td>TEXT</td><td>Nome da empresa (obrigatório)</td></tr>
+                                <tr><td>atividade</td><td>TEXT</td><td>Ramo de atividade (obrigatório)</td></tr>
+                                <tr><td>responsavel</td><td>TEXT</td><td>Nome do responsável (obrigatório)</td></tr>
+                                <tr><td>endereco_rua</td><td>TEXT</td><td>Rua do endereço</td></tr>
+                                <tr><td>endereco_cidade</td><td>TEXT</td><td>Cidade do endereço</td></tr>
+                                <tr><td>endereco_estado</td><td>TEXT</td><td>Estado do endereço</td></tr>
+                                <tr><td>endereco_bairro</td><td>TEXT</td><td>Bairro do endereço</td></tr>
+                                <tr><td>endereco_cep</td><td>TEXT</td><td>CEP do endereço</td></tr>
+                                <tr><td>endereco_pais</td><td>TEXT</td><td>País do endereço</td></tr>
+                                <tr><td>endereco_complemento</td><td>TEXT</td><td>Complemento do endereço</td></tr>
+                                <tr><td>endereco_numero</td><td>TEXT</td><td>Número do endereço</td></tr>
+                                <tr><td>telefone_fixo</td><td>TEXT</td><td>Telefone fixo</td></tr>
+                                <tr><td>telefone_celular</td><td>TEXT</td><td>Telefone celular</td></tr>
+                                <tr><td>email</td><td>TEXT</td><td>Email da empresa</td></tr>
+                                <tr><td>logo</td><td>TEXT</td><td>URL da logo da empresa</td></tr>
+                                <tr><td>ativa</td><td>BOOLEAN</td><td>Status da empresa (obrigatório)</td></tr>
+                                <tr><td>data_cadastro</td><td>TIMESTAMP WITH TIME ZONE</td><td>Data de cadastro (obrigatório)</td></tr>
+                                <tr><td>chave_api</td><td>UUID</td><td>Chave de API (default: UUID zero)</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4>Corpo da Requisição:</h4>
+                        <pre><code>{
+  "nome": "Minha Empresa",
+  "atividade": "Barbearia",
+  "responsavel": "João Silva",
+  "telefone_celular": "11999999999",
+  "email": "contato@minhaempresa.com",
+  "endereco_rua": "Rua Principal",
+  "endereco_cidade": "São Paulo",
+  "endereco_estado": "SP",
+  "endereco_bairro": "Centro",
+  "endereco_cep": "01001-001",
+  "endereco_pais": "Brasil",
+  "endereco_complemento": "Sala 123",
+  "endereco_numero": "100",
+  "telefone_fixo": "1133333333",
+  "logo": "https://minha-empresa.com/logo.png",
+  "ativa": true
+}</code></pre>
+                    </div>
+                </section>
+
+                <section id="clientes">
+                    <h2>Clientes</h2>
+                    
+                    <div class="endpoint">
+                        <span class="method post">POST</span>
+                        <code>/clientes</code>
+                        <h4>Estrutura da Tabela:</h4>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Campo</th>
+                                    <th>Tipo</th>
+                                    <th>Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>id</td><td>UUID</td><td>Chave primária</td></tr>
+                                <tr><td>nome</td><td>VARCHAR(150)</td><td>Nome do cliente (obrigatório)</td></tr>
+                                <tr><td>cpf_cnpj</td><td>VARCHAR(20)</td><td>CPF ou CNPJ do cliente (único)</td></tr>
+                                <tr><td>data_nascimento</td><td>DATE</td><td>Data de nascimento</td></tr>
+                                <tr><td>telefone_celular</td><td>TEXT</td><td>Telefone de contato (obrigatório)</td></tr>
+                                <tr><td>email</td><td>VARCHAR(255)</td><td>Email do cliente (único)</td></tr>
+                                <tr><td>endereco_rua</td><td>TEXT</td><td>Rua do endereço</td></tr>
+                                <tr><td>endereco_cidade</td><td>TEXT</td><td>Cidade do endereço</td></tr>
+                                <tr><td>endereco_estado</td><td>TEXT</td><td>Estado do endereço</td></tr>
+                                <tr><td>endereco_bairro</td><td>TEXT</td><td>Bairro do endereço</td></tr>
+                                <tr><td>endereco_cep</td><td>TEXT</td><td>CEP do endereço</td></tr>
+                                <tr><td>endereco_pais</td><td>TEXT</td><td>País do endereço</td></tr>
+                                <tr><td>endereco_complemento</td><td>TEXT</td><td>Complemento do endereço</td></tr>
+                                <tr><td>endereco_numero</td><td>TEXT</td><td>Número do endereço</td></tr>
+                                <tr><td>observacoes</td><td>TEXT</td><td>Observações gerais</td></tr>
+                                <tr><td>data_cadastro</td><td>TIMESTAMP WITH TIME ZONE</td><td>Data de cadastro (default: CURRENT_TIMESTAMP)</td></tr>
+                                <tr><td>senha</td><td>TEXT</td><td>Senha do cliente (obrigatório)</td></tr>
+                                <tr><td>ativo</td><td>BOOLEAN</td><td>Status do cliente (default: true)</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4>Corpo da Requisição:</h4>
+                        <pre><code>{
+  "nome": "Cliente Exemplo",
+  "cpf_cnpj": "123.456.789-00",
+  "data_nascimento": "1990-01-01",
+  "telefone_celular": "11999999999",
+  "email": "cliente@email.com",
+  "senha": "senha123",
+  "endereco_rua": "Rua do Cliente",
+  "endereco_cidade": "São Paulo",
+  "endereco_estado": "SP",
+  "endereco_bairro": "Centro",
+  "endereco_cep": "01001-001",
+  "endereco_pais": "Brasil",
+  "endereco_complemento": "Apto 123",
+  "endereco_numero": "456",
+  "observacoes": "Observações sobre o cliente",
+  "ativo": true
+}</code></pre>
+                    </div>
+                </section>
+
+                <section id="atendentes">
+                    <h2>Atendentes</h2>
+                    
+                    <div class="endpoint">
+                        <span class="method post">POST</span>
+                        <code>/atendentes</code>
+                        <h4>Estrutura da Tabela:</h4>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Campo</th>
+                                    <th>Tipo</th>
+                                    <th>Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>id</td><td>UUID</td><td>Chave primária</td></tr>
+                                <tr><td>nome</td><td>VARCHAR(100)</td><td>Nome do atendente (obrigatório)</td></tr>
+                                <tr><td>especialidade_id</td><td>UUID</td><td>ID da especialidade (obrigatório)</td></tr>
+                                <tr><td>empresa_id</td><td>UUID</td><td>ID da empresa (obrigatório)</td></tr>
+                                <tr><td>telefone_celular</td><td>TEXT</td><td>Telefone de contato (obrigatório)</td></tr>
+                                <tr><td>email</td><td>VARCHAR(255)</td><td>Email do atendente (obrigatório)</td></tr>
+                                <tr><td>data_contratacao</td><td>TIMESTAMP WITH TIME ZONE</td><td>Data de contratação (obrigatório)</td></tr>
+                                <tr><td>administrador</td><td>BOOLEAN</td><td>Se é administrador (default: false)</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4>Corpo da Requisição:</h4>
+                        <pre><code>{
+  "nome": "Atendente Exemplo",
+  "especialidade_id": "550e8400-e29b-41d4-a716-446655440000",
+  "telefone_celular": "11999999999",
+  "email": "atendente@email.com",
+  "data_contratacao": "2025-02-22T00:00:00.000Z",
+  "administrador": false
+}</code></pre>
+                    </div>
+                </section>
+
+                <section id="agendamentos">
+                    <h2>Agendamentos</h2>
+                    
+                    <div class="endpoint">
+                        <span class="method post">POST</span>
+                        <code>/agendamentos</code>
+                        <h4>Estrutura da Tabela:</h4>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Campo</th>
+                                    <th>Tipo</th>
+                                    <th>Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>id</td><td>UUID</td><td>Chave primária</td></tr>
+                                <tr><td>cliente_id</td><td>UUID</td><td>ID do cliente (obrigatório)</td></tr>
+                                <tr><td>empresa_id</td><td>UUID</td><td>ID da empresa (obrigatório)</td></tr>
+                                <tr><td>atendente_id</td><td>UUID</td><td>ID do atendente (obrigatório)</td></tr>
+                                <tr><td>data_agendamento</td><td>TIMESTAMP WITH TIME ZONE</td><td>Data e hora do agendamento (obrigatório)</td></tr>
+                                <tr><td>servico_realizado</td><td>BOOLEAN</td><td>Se o serviço foi realizado (obrigatório)</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4>Corpo da Requisição:</h4>
+                        <pre><code>{
+  "cliente_id": "550e8400-e29b-41d4-a716-446655440000",
+  "atendente_id": "550e8400-e29b-41d4-a716-446655440001",
+  "data_agendamento": "2025-02-22T14:00:00.000Z",
+  "servico_realizado": false
+}</code></pre>
+                    </div>
+                </section>
+
+                <section id="especialidades">
+                    <h2>Especialidades</h2>
+                    
+                    <div class="endpoint">
+                        <span class="method post">POST</span>
+                        <code>/especialidades</code>
+                        <h4>Estrutura da Tabela:</h4>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Campo</th>
+                                    <th>Tipo</th>
+                                    <th>Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>id</td><td>UUID</td><td>Chave primária</td></tr>
+                                <tr><td>nome</td><td>TEXT</td><td>Nome da especialidade (obrigatório)</td></tr>
+                                <tr><td>descricao</td><td>TEXT</td><td>Descrição da especialidade (obrigatório)</td></tr>
+                                <tr><td>empresa_id</td><td>UUID</td><td>ID da empresa (default: UUID zero)</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4>Corpo da Requisição:</h4>
+                        <pre><code>{
+  "nome": "Corte de Cabelo",
+  "descricao": "Corte masculino ou feminino"
+}</code></pre>
+                    </div>
+                </section>
+
+                <section id="horarios">
+                    <h2>Horários</h2>
+                    
+                    <div class="endpoint">
+                        <span class="method post">POST</span>
+                        <code>/horarios</code>
+                        <h4>Estrutura da Tabela:</h4>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Campo</th>
+                                    <th>Tipo</th>
+                                    <th>Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>id</td><td>UUID</td><td>Chave primária</td></tr>
+                                <tr><td>atendente_id</td><td>UUID</td><td>ID do atendente (obrigatório)</td></tr>
+                                <tr><td>dia_semana</td><td>INTEGER</td><td>Dia da semana (0-6) (obrigatório)</td></tr>
+                                <tr><td>hora_inicio</td><td>TIME</td><td>Horário de início (obrigatório)</td></tr>
+                                <tr><td>hora_fim</td><td>TIME</td><td>Horário de término (obrigatório)</td></tr>
+                                <tr><td>ativo</td><td>BOOLEAN</td><td>Status do horário (default: true)</td></tr>
+                                <tr><td>empresa_id</td><td>UUID</td><td>ID da empresa (obrigatório)</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4>Corpo da Requisição:</h4>
+                        <pre><code>{
+  "atendente_id": "550e8400-e29b-41d4-a716-446655440000",
+  "dia_semana": 1,
+  "hora_inicio": "09:00",
+  "hora_fim": "18:00",
+  "ativo": true
+}</code></pre>
+                    </div>
+                </section>
+
+                <section id="exemplos">
+                    <h2>Exemplos de Uso</h2>
+                    
+                    <h3>Exemplo no Postman</h3>
+                    <div class="code-block">
+                        <p>1. Criar uma empresa:</p>
+                        <pre><code>POST http://localhost:3001/empresas
+Content-Type: application/json
+
+{
+  "nome": "Minha Empresa",
+  "atividade": "Barbearia",
+  "responsavel": "João Silva",
+  "telefone_celular": "11999999999"
+}</code></pre>
+                    </div>
+
+                    <h3>Exemplo no n8n</h3>
+                    <ol>
+                        <li>Adicione um novo nó HTTP Request</li>
+                        <li>Configure o método (GET, POST, etc)</li>
+                        <li>Adicione o header x-api-key</li>
+                        <li>Para POST/PUT, adicione o corpo da requisição em JSON</li>
+                    </ol>
+
+                    <h3>Exemplo no Typebot</h3>
+                    <ol>
+                        <li>Use o bloco "HTTP Request"</li>
+                        <li>Adicione a URL completa</li>
+                        <li>Configure o método</li>
+                        <li>Adicione o header x-api-key</li>
+                        <li>Para POST/PUT, adicione o corpo em JSON</li>
+                    </ol>
+                </section>
+
+                <section id="erros">
+                    <h2>Códigos de Erro</h2>
+                    <ul class="list-group">
+                        <li class="list-group-item">200: Sucesso</li>
+                        <li class="list-group-item">201: Criado com sucesso</li>
+                        <li class="list-group-item">400: Erro de validação ou dados inválidos</li>
+                        <li class="list-group-item">401: Não autorizado (API Key inválida ou ausente)</li>
+                        <li class="list-group-item">404: Recurso não encontrado</li>
+                        <li class="list-group-item">409: Conflito (ex: tentar criar uma segunda empresa)</li>
+                        <li class="list-group-item">500: Erro interno do servidor</li>
+                    </ul>
+
+                    <h3>Exemplos de Erros</h3>
+                    <pre><code>{
+  "error": "API Key não fornecida"
+}
+
+{
+  "error": "Cliente não encontrado"
+}
+
+{
+  "error": "Já existe uma empresa cadastrada"
+}</code></pre>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>
+        hljs.highlightAll();
+    </script>
+</body>
+</html>

@@ -4,177 +4,36 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.sequelize.transaction(async (transaction) => {
-      // 1. Companies
-      await queryInterface.createTable('Companies', {
-        Id: {
-          type: Sequelize.UUID,
+      // 1. Empresas
+      await queryInterface.createTable('empresas', {
+        id: {
+          type: Sequelize.INTEGER,
           primaryKey: true,
-          defaultValue: Sequelize.UUIDV4
+          autoIncrement: true
         },
-        Name: {
-          type: Sequelize.TEXT,
+        nome: {
+          type: Sequelize.STRING,
           allowNull: false
         },
-        Activity: {
-          type: Sequelize.TEXT,
+        atividade: {
+          type: Sequelize.STRING,
           allowNull: false
         },
-        Responsible: {
-          type: Sequelize.TEXT,
+        responsavel: {
+          type: Sequelize.STRING,
           allowNull: false
         },
-        Address_Street: {
-          type: Sequelize.TEXT
-        },
-        Address_City: {
-          type: Sequelize.TEXT
-        },
-        Address_State: {
-          type: Sequelize.TEXT
-        },
-        Address_PostalCode: {
-          type: Sequelize.TEXT
-        },
-        Address_Country: {
-          type: Sequelize.TEXT
-        },
-        Address_AdditionalInfo: {
-          type: Sequelize.TEXT
-        },
-        Address_Number: {
-          type: Sequelize.TEXT
-        },
-        createdAt: {
-          type: Sequelize.DATE,
+        telefone_celular: {
+          type: Sequelize.STRING,
           allowNull: false
         },
-        updatedAt: {
-          type: Sequelize.DATE,
-          allowNull: false
-        }
-      }, { transaction });
-
-      // 2. Specialties
-      await queryInterface.createTable('Specialties', {
-        Id: {
-          type: Sequelize.UUID,
-          primaryKey: true,
-          defaultValue: Sequelize.UUIDV4
+        chave_api: {
+          type: Sequelize.STRING,
+          unique: true
         },
-        Name: {
-          type: Sequelize.TEXT,
-          allowNull: false
-        },
-        Description: {
-          type: Sequelize.TEXT,
-          allowNull: false
-        },
-        CompanyId: {
-          type: Sequelize.UUID,
-          allowNull: false,
-          references: {
-            model: 'Companies',
-            key: 'Id'
-          },
-          onUpdate: 'CASCADE',
-          onDelete: 'CASCADE'
-        },
-        createdAt: {
-          type: Sequelize.DATE,
-          allowNull: false
-        },
-        updatedAt: {
-          type: Sequelize.DATE,
-          allowNull: false
-        }
-      }, { transaction });
-
-      // 3. Customers
-      await queryInterface.createTable('Customers', {
-        Id: {
-          type: Sequelize.UUID,
-          primaryKey: true,
-          defaultValue: Sequelize.UUIDV4
-        },
-        Name: {
-          type: Sequelize.STRING(100),
-          allowNull: false
-        },
-        MobileNumber: {
-          type: Sequelize.TEXT,
-          allowNull: false
-        },
-        Email: {
-          type: Sequelize.STRING(255)
-        },
-        RegistrationDate: {
-          type: Sequelize.DATE,
-          allowNull: false,
-          defaultValue: Sequelize.NOW
-        },
-        Password: {
-          type: Sequelize.TEXT,
-          allowNull: false
-        },
-        CompanyId: {
-          type: Sequelize.UUID,
-          allowNull: false,
-          references: {
-            model: 'Companies',
-            key: 'Id'
-          },
-          onUpdate: 'CASCADE',
-          onDelete: 'CASCADE'
-        }
-      }, { transaction });
-
-      // 4. Attendants
-      await queryInterface.createTable('Attendants', {
-        Id: {
-          type: Sequelize.UUID,
-          primaryKey: true,
-          defaultValue: Sequelize.UUIDV4
-        },
-        Name: {
-          type: Sequelize.STRING(100),
-          allowNull: false
-        },
-        SpecialtyId: {
-          type: Sequelize.UUID,
-          allowNull: false,
-          references: {
-            model: 'Specialties',
-            key: 'Id'
-          },
-          onUpdate: 'CASCADE',
-          onDelete: 'CASCADE'
-        },
-        CompanyId: {
-          type: Sequelize.UUID,
-          allowNull: false,
-          references: {
-            model: 'Companies',
-            key: 'Id'
-          },
-          onUpdate: 'CASCADE',
-          onDelete: 'CASCADE'
-        },
-        MobileNumber: {
-          type: Sequelize.TEXT,
-          allowNull: false
-        },
-        Email: {
-          type: Sequelize.STRING(255),
-          allowNull: false
-        },
-        HiringDate: {
-          type: Sequelize.DATE,
-          allowNull: false
-        },
-        IsAdmin: {
+        ativa: {
           type: Sequelize.BOOLEAN,
-          allowNull: false,
-          defaultValue: false
+          defaultValue: true
         },
         createdAt: {
           type: Sequelize.DATE,
@@ -186,34 +45,39 @@ module.exports = {
         }
       }, { transaction });
 
-      // 5. Schedules
-      await queryInterface.createTable('Schedules', {
-        Id: {
-          type: Sequelize.UUID,
+      // 2. Clientes
+      await queryInterface.createTable('clientes', {
+        id: {
+          type: Sequelize.INTEGER,
           primaryKey: true,
-          defaultValue: Sequelize.UUIDV4
+          autoIncrement: true
         },
-        AttendantId: {
-          type: Sequelize.UUID,
+        nome: {
+          type: Sequelize.STRING,
+          allowNull: false
+        },
+        telefone_celular: {
+          type: Sequelize.STRING,
+          allowNull: false
+        },
+        email: {
+          type: Sequelize.STRING
+        },
+        data_nascimento: {
+          type: Sequelize.DATEONLY
+        },
+        observacoes: {
+          type: Sequelize.TEXT
+        },
+        empresa_id: {
+          type: Sequelize.INTEGER,
           allowNull: false,
           references: {
-            model: 'Attendants',
-            key: 'Id'
+            model: 'empresas',
+            key: 'id'
           },
           onUpdate: 'CASCADE',
           onDelete: 'CASCADE'
-        },
-        DayOfWeek: {
-          type: Sequelize.TEXT,
-          allowNull: false
-        },
-        StartTime: {
-          type: Sequelize.DATE,
-          allowNull: false
-        },
-        EndTime: {
-          type: Sequelize.DATE,
-          allowNull: false
         },
         createdAt: {
           type: Sequelize.DATE,
@@ -225,51 +89,85 @@ module.exports = {
         }
       }, { transaction });
 
-      // 6. Appointments
-      await queryInterface.createTable('Appointments', {
-        Id: {
-          type: Sequelize.UUID,
+      // 3. Especialidades
+      await queryInterface.createTable('especialidades', {
+        id: {
+          type: Sequelize.INTEGER,
           primaryKey: true,
-          defaultValue: Sequelize.UUIDV4
+          autoIncrement: true
         },
-        CustomerId: {
-          type: Sequelize.UUID,
+        nome: {
+          type: Sequelize.STRING,
+          allowNull: false
+        },
+        descricao: {
+          type: Sequelize.TEXT
+        },
+        empresa_id: {
+          type: Sequelize.INTEGER,
           allowNull: false,
           references: {
-            model: 'Customers',
-            key: 'Id'
+            model: 'empresas',
+            key: 'id'
           },
           onUpdate: 'CASCADE',
           onDelete: 'CASCADE'
         },
-        CompanyId: {
-          type: Sequelize.UUID,
-          allowNull: false,
-          references: {
-            model: 'Companies',
-            key: 'Id'
-          },
-          onUpdate: 'CASCADE',
-          onDelete: 'CASCADE'
-        },
-        AttendantId: {
-          type: Sequelize.UUID,
-          allowNull: false,
-          references: {
-            model: 'Attendants',
-            key: 'Id'
-          },
-          onUpdate: 'CASCADE',
-          onDelete: 'CASCADE'
-        },
-        AppointmentDate: {
+        createdAt: {
           type: Sequelize.DATE,
           allowNull: false
         },
-        IsServiceDone: {
+        updatedAt: {
+          type: Sequelize.DATE,
+          allowNull: false
+        }
+      }, { transaction });
+
+      // 4. Atendentes
+      await queryInterface.createTable('atendentes', {
+        id: {
+          type: Sequelize.INTEGER,
+          primaryKey: true,
+          autoIncrement: true
+        },
+        nome: {
+          type: Sequelize.STRING,
+          allowNull: false
+        },
+        telefone_celular: {
+          type: Sequelize.STRING,
+          allowNull: false
+        },
+        email: {
+          type: Sequelize.STRING
+        },
+        data_contratacao: {
+          type: Sequelize.DATEONLY,
+          allowNull: false
+        },
+        ativo: {
           type: Sequelize.BOOLEAN,
+          defaultValue: true
+        },
+        empresa_id: {
+          type: Sequelize.INTEGER,
           allowNull: false,
-          defaultValue: false
+          references: {
+            model: 'empresas',
+            key: 'id'
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'CASCADE'
+        },
+        especialidade_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          references: {
+            model: 'especialidades',
+            key: 'id'
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'CASCADE'
         },
         createdAt: {
           type: Sequelize.DATE,
@@ -281,53 +179,141 @@ module.exports = {
         }
       }, { transaction });
 
-      // Criar índices para melhor performance
-      await queryInterface.addIndex('Customers', ['CompanyId'], {
-        name: 'idx_customers_company_id',
-        transaction
-      });
+      // 5. Horários
+      await queryInterface.createTable('horarios', {
+        id: {
+          type: Sequelize.INTEGER,
+          primaryKey: true,
+          autoIncrement: true
+        },
+        dia_semana: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          validate: {
+            min: 0,
+            max: 6
+          }
+        },
+        hora_inicio: {
+          type: Sequelize.TIME,
+          allowNull: false
+        },
+        hora_fim: {
+          type: Sequelize.TIME,
+          allowNull: false
+        },
+        ativo: {
+          type: Sequelize.BOOLEAN,
+          defaultValue: true
+        },
+        empresa_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          references: {
+            model: 'empresas',
+            key: 'id'
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'CASCADE'
+        },
+        atendente_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          references: {
+            model: 'atendentes',
+            key: 'id'
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'CASCADE'
+        },
+        createdAt: {
+          type: Sequelize.DATE,
+          allowNull: false
+        },
+        updatedAt: {
+          type: Sequelize.DATE,
+          allowNull: false
+        }
+      }, { transaction });
 
-      await queryInterface.addIndex('Attendants', ['CompanyId'], {
-        name: 'idx_attendants_company_id',
-        transaction
-      });
-
-      await queryInterface.addIndex('Attendants', ['SpecialtyId'], {
-        name: 'idx_attendants_specialty_id',
-        transaction
-      });
-
-      await queryInterface.addIndex('Appointments', ['CompanyId'], {
-        name: 'idx_appointments_company_id',
-        transaction
-      });
-
-      await queryInterface.addIndex('Appointments', ['CustomerId'], {
-        name: 'idx_appointments_customer_id',
-        transaction
-      });
-
-      await queryInterface.addIndex('Appointments', ['AttendantId'], {
-        name: 'idx_appointments_attendant_id',
-        transaction
-      });
-
-      await queryInterface.addIndex('Schedules', ['AttendantId'], {
-        name: 'idx_schedules_attendant_id',
-        transaction
-      });
+      // 6. Agendamentos
+      await queryInterface.createTable('agendamentos', {
+        id: {
+          type: Sequelize.INTEGER,
+          primaryKey: true,
+          autoIncrement: true
+        },
+        data: {
+          type: Sequelize.DATEONLY,
+          allowNull: false
+        },
+        status: {
+          type: Sequelize.ENUM('confirmado', 'cancelado', 'concluido'),
+          defaultValue: 'confirmado'
+        },
+        observacoes: {
+          type: Sequelize.TEXT
+        },
+        empresa_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          references: {
+            model: 'empresas',
+            key: 'id'
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'CASCADE'
+        },
+        cliente_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          references: {
+            model: 'clientes',
+            key: 'id'
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'CASCADE'
+        },
+        atendente_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          references: {
+            model: 'atendentes',
+            key: 'id'
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'CASCADE'
+        },
+        horario_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          references: {
+            model: 'horarios',
+            key: 'id'
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'CASCADE'
+        },
+        createdAt: {
+          type: Sequelize.DATE,
+          allowNull: false
+        },
+        updatedAt: {
+          type: Sequelize.DATE,
+          allowNull: false
+        }
+      }, { transaction });
     });
   },
 
   async down(queryInterface, Sequelize) {
     await queryInterface.sequelize.transaction(async (transaction) => {
-      // Remover tabelas na ordem inversa
-      await queryInterface.dropTable('Appointments', { transaction });
-      await queryInterface.dropTable('Schedules', { transaction });
-      await queryInterface.dropTable('Attendants', { transaction });
-      await queryInterface.dropTable('Customers', { transaction });
-      await queryInterface.dropTable('Specialties', { transaction });
-      await queryInterface.dropTable('Companies', { transaction });
+      await queryInterface.dropTable('agendamentos', { transaction });
+      await queryInterface.dropTable('horarios', { transaction });
+      await queryInterface.dropTable('atendentes', { transaction });
+      await queryInterface.dropTable('especialidades', { transaction });
+      await queryInterface.dropTable('clientes', { transaction });
+      await queryInterface.dropTable('empresas', { transaction });
     });
   }
 };
