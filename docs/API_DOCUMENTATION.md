@@ -115,6 +115,28 @@ x-api-key: [A chave API será carregada automaticamente do ambiente]
 | status | ENUM | Status ('confirmado', 'cancelado', 'concluido') |
 | observacoes | TEXT | Observações do agendamento |
 
+### Configurações (config)
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| id | UUID | Chave primária |
+| logo_url | TEXT | URL do logo |
+| evolution_url | TEXT | URL do Evolution |
+| evolution_key | TEXT | Chave do Evolution |
+| evolution_instancia | TEXT | Instância do Evolution |
+| minio_bucket | TEXT | Nome do bucket Minio |
+| minio_port | TEXT | Porta do Minio |
+| minio_access_key | TEXT | Chave de acesso do Minio |
+| minio_secret_key | TEXT | Chave secreta do Minio |
+| minio_endpoint | TEXT | Endpoint do Minio |
+| email | TEXT | Email para envio de notificações |
+| email_senha | TEXT | Senha do email |
+| email_smtp | TEXT | Servidor SMTP |
+| email_porta | TEXT | Porta do servidor SMTP |
+| email_texto_agendado | TEXT | Texto para email de agendamento |
+| email_texto_cancelado | TEXT | Texto para email de cancelamento |
+| email_texto_confirmado | TEXT | Texto para email de confirmação |
+| email_texto_recusado | TEXT | Texto para email de recusa |
+
 ## Endpoints
 
 ### Empresas
@@ -230,6 +252,64 @@ Corpo da Requisição:
   "observacoes": "Observações sobre o agendamento"
 }
 ```
+
+### Configurações
+
+#### Listar Configurações
+```http
+GET /config
+```
+
+Retorna todas as configurações cadastradas.
+
+#### Obter Configuração por ID
+```http
+GET /config/{id}
+```
+
+Retorna uma configuração específica pelo ID.
+
+#### Criar Configuração
+```http
+POST /config
+```
+
+Corpo da Requisição:
+```json
+{
+  "logo_url": "https://exemplo.com/logo.png",
+  "evolution_url": "https://evolution.exemplo.com",
+  "evolution_key": "chave-evolution",
+  "evolution_instancia": "instancia-1",
+  "minio_bucket": "meu-bucket",
+  "minio_port": "9000",
+  "minio_access_key": "access-key",
+  "minio_secret_key": "secret-key",
+  "minio_endpoint": "https://minio.exemplo.com",
+  "email": "notificacoes@exemplo.com",
+  "email_senha": "senha-email",
+  "email_smtp": "smtp.exemplo.com",
+  "email_porta": "587",
+  "email_texto_agendado": "Seu agendamento foi realizado com sucesso",
+  "email_texto_cancelado": "Seu agendamento foi cancelado",
+  "email_texto_confirmado": "Seu agendamento foi confirmado",
+  "email_texto_recusado": "Seu agendamento foi recusado"
+}
+```
+
+#### Atualizar Configuração
+```http
+PUT /config/{id}
+```
+
+Corpo da Requisição: mesmo formato do endpoint de criação.
+
+#### Remover Configuração
+```http
+DELETE /config/{id}
+```
+
+Remove uma configuração específica pelo ID.
 
 ## Exemplos de Uso
 

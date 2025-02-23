@@ -113,6 +113,9 @@
                             <a class="nav-link" href="#horarios">Horários</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="#config">Configurações</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="#exemplos">Exemplos de Uso</a>
                         </li>
                         <li class="nav-item">
@@ -402,6 +405,96 @@
   "hora_fim": "18:00",
   "ativo": true
 }</code></pre>
+                    </div>
+                </section>
+
+                <section id="config">
+                    <h2>Configurações</h2>
+                    
+                    <div class="endpoint">
+                        <h4>Estrutura da Tabela:</h4>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Campo</th>
+                                    <th>Tipo</th>
+                                    <th>Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>id</td><td>UUID</td><td>Chave primária</td></tr>
+                                <tr><td>logo_url</td><td>TEXT</td><td>URL do logo</td></tr>
+                                <tr><td>evolution_url</td><td>TEXT</td><td>URL do Evolution</td></tr>
+                                <tr><td>evolution_key</td><td>TEXT</td><td>Chave do Evolution</td></tr>
+                                <tr><td>evolution_instancia</td><td>TEXT</td><td>Instância do Evolution</td></tr>
+                                <tr><td>minio_bucket</td><td>TEXT</td><td>Nome do bucket Minio</td></tr>
+                                <tr><td>minio_port</td><td>TEXT</td><td>Porta do Minio</td></tr>
+                                <tr><td>minio_access_key</td><td>TEXT</td><td>Chave de acesso do Minio</td></tr>
+                                <tr><td>minio_secret_key</td><td>TEXT</td><td>Chave secreta do Minio</td></tr>
+                                <tr><td>minio_endpoint</td><td>TEXT</td><td>Endpoint do Minio</td></tr>
+                                <tr><td>email</td><td>TEXT</td><td>Email para envio de notificações</td></tr>
+                                <tr><td>email_senha</td><td>TEXT</td><td>Senha do email</td></tr>
+                                <tr><td>email_smtp</td><td>TEXT</td><td>Servidor SMTP</td></tr>
+                                <tr><td>email_porta</td><td>TEXT</td><td>Porta do servidor SMTP</td></tr>
+                                <tr><td>email_texto_agendado</td><td>TEXT</td><td>Texto para email de agendamento</td></tr>
+                                <tr><td>email_texto_cancelado</td><td>TEXT</td><td>Texto para email de cancelamento</td></tr>
+                                <tr><td>email_texto_confirmado</td><td>TEXT</td><td>Texto para email de confirmação</td></tr>
+                                <tr><td>email_texto_recusado</td><td>TEXT</td><td>Texto para email de recusa</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4>Endpoints:</h4>
+
+                        <div class="mb-4">
+                            <span class="method get">GET</span>
+                            <code>/config</code>
+                            <p>Lista todas as configurações cadastradas.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <span class="method get">GET</span>
+                            <code>/config/{id}</code>
+                            <p>Retorna uma configuração específica pelo ID.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <span class="method post">POST</span>
+                            <code>/config</code>
+                            <p>Cria uma nova configuração.</p>
+                            <h5>Corpo da Requisição:</h5>
+                            <pre><code>{
+  "logo_url": "https://exemplo.com/logo.png",
+  "evolution_url": "https://evolution.exemplo.com",
+  "evolution_key": "chave-evolution",
+  "evolution_instancia": "instancia-1",
+  "minio_bucket": "meu-bucket",
+  "minio_port": "9000",
+  "minio_access_key": "access-key",
+  "minio_secret_key": "secret-key",
+  "minio_endpoint": "https://minio.exemplo.com",
+  "email": "notificacoes@exemplo.com",
+  "email_senha": "senha-email",
+  "email_smtp": "smtp.exemplo.com",
+  "email_porta": "587",
+  "email_texto_agendado": "Seu agendamento foi realizado com sucesso",
+  "email_texto_cancelado": "Seu agendamento foi cancelado",
+  "email_texto_confirmado": "Seu agendamento foi confirmado",
+  "email_texto_recusado": "Seu agendamento foi recusado"
+}</code></pre>
+                        </div>
+
+                        <div class="mb-4">
+                            <span class="method put">PUT</span>
+                            <code>/config/{id}</code>
+                            <p>Atualiza uma configuração existente.</p>
+                            <p>Corpo da Requisição: mesmo formato do endpoint de criação.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <span class="method delete">DELETE</span>
+                            <code>/config/{id}</code>
+                            <p>Remove uma configuração específica.</p>
+                        </div>
                     </div>
                 </section>
 
