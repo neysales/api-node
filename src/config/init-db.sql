@@ -1,3 +1,25 @@
+
+CREATE TABLE IF NOT EXISTS public.config(
+    id UUID NOT NULL,
+    logo_url TEXT COLLATE pg_catalog."default",
+    evolution_url TEXT COLLATE pg_catalog."default",
+    evolution_key TEXT COLLATE pg_catalog."default",
+    evolution_instancia TEXT COLLATE pg_catalog."default",
+    minio_bucket TEXT COLLATE pg_catalog."default",
+    minio_port TEXT COLLATE pg_catalog."default",
+    minio_access_key TEXT COLLATE pg_catalog."default",
+    minio_secret_key TEXT COLLATE pg_catalog."default",
+    minio_endpoint TEXT COLLATE pg_catalog."default",
+    email TEXT COLLATE pg_catalog."default",
+    email_senha TEXT COLLATE pg_catalog."default",
+    email_smtp TEXT COLLATE pg_catalog."default",
+    email_porta TEXT COLLATE pg_catalog."default",
+    email_texto_agendado TEXT COLLATE pg_catalog."default",
+    email_texto_cancelado TEXT COLLATE pg_catalog."default",
+    email_texto_confirmado TEXT COLLATE pg_catalog."default",
+    email_texto_recusado TEXT COLLATE pg_catalog."default"
+);
+
 CREATE TABLE IF NOT EXISTS public.agendamentos (
     id UUID NOT NULL,
     cliente_id UUID NOT NULL,
@@ -21,8 +43,8 @@ CREATE TABLE IF NOT EXISTS public.atendentes (
 );
 
 CREATE TABLE IF NOT EXISTS public.empresas (
-    id UUID NOT NULL,
-    nome TEXT COLLATE pg_catalog."default" NOT NULL,
+    id UUID NOT NULL, 
+    nome TEXT COLLATE pg_catalog."default" NOT NULL,    
     atividade TEXT COLLATE pg_catalog."default" NOT NULL,
     responsavel TEXT COLLATE pg_catalog."default" NOT NULL,
     endereco_rua TEXT COLLATE pg_catalog."default",

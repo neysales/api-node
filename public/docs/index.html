@@ -118,6 +118,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="#erros">Códigos de Erro</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/api-docs/">Swagger</a>
+                        </li>
                     </ul>
                 </div>
             </nav>
@@ -130,14 +133,14 @@
                     <p>A API de Agendamento é um serviço RESTful que permite gerenciar empresas, clientes, atendentes e agendamentos. Todas as respostas são em formato JSON.</p>
                     <div class="endpoint">
                         <strong>URL Base:</strong>
-                        <code>http://localhost:3001</code> (desenvolvimento) ou <code>https://agendaapi.agendero.com</code> (produção)
+                        <code id="urlBase">Carregando...</code>
                     </div>
                 </section>
 
                 <section id="autenticacao">
                     <h2>Autenticação</h2>
                     <p>A API utiliza autenticação via chave API. Para todas as requisições (exceto criação de empresa), você deve incluir o header:</p>
-                    <pre><code>x-api-key: SUA_CHAVE_API_AQUI</code></pre>
+                    <pre><code>x-api-key: SUA_CHAVE_API (Authentication__ApiKey)</code></pre>
                     <p>Para obter sua chave API, primeiro crie uma empresa usando o endpoint <code>/empresas</code>.</p>
                 </section>
 
@@ -407,7 +410,7 @@
                     
                     <h3>Exemplo no Postman</h3>
                     <div class="code-block">
-                        <p>1. Criar uma empresa:</p>
+                        <p>1. Criar uma empresa (não requer API key):</p>
                         <pre><code>POST http://localhost:3001/empresas
 Content-Type: application/json
 
@@ -415,7 +418,67 @@ Content-Type: application/json
   "nome": "Minha Empresa",
   "atividade": "Barbearia",
   "responsavel": "João Silva",
-  "telefone_celular": "11999999999"
+  "telefone_celular": "11999999999",
+  "email": "contato@minhaempresa.com",
+  "endereco_rua": "Rua Principal",
+  "endereco_cidade": "São Paulo",
+  "endereco_estado": "SP",
+  "endereco_bairro": "Centro",
+  "endereco_cep": "01001-001",
+  "endereco_pais": "Brasil",
+  "endereco_complemento": "Sala 123",
+  "endereco_numero": "100",
+  "telefone_fixo": "1133333333",
+  "logo": "https://minha-empresa.com/logo.png",
+  "ativa": true
+}</code></pre>
+                        <p>Resposta de sucesso (copie a chave_api retornada):</p>
+                        <pre><code>{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "nome": "Minha Empresa",
+  "chave_api": "12345678-1234-1234-1234-123456789012"
+}</code></pre>
+
+                        <p>2. Criar um cliente (requer API key):</p>
+                        <pre><code>POST http://localhost:3001/clientes
+Content-Type: application/json
+x-api-key: 446AE6DD89E64F7F9D8964B595035644
+
+{
+  "nome": "Cliente Exemplo",
+  "cpf_cnpj": "123.456.789-00",
+  "data_nascimento": "1990-01-01",
+  "telefone_celular": "11999999999",
+  "email": "cliente@email.com",
+  "senha": "senha123",
+  "endereco_rua": "Rua do Cliente",
+  "endereco_cidade": "São Paulo",
+  "endereco_estado": "SP",
+  "endereco_bairro": "Centro",
+  "endereco_cep": "01001-001",
+  "endereco_pais": "Brasil",
+  "endereco_complemento": "Apto 123",
+  "endereco_numero": "456",
+  "observacoes": "Observações sobre o cliente",
+  "ativo": true
+}</code></pre>
+
+                        <p>3. Listar clientes (requer API key):</p>
+                        <pre><code>GET http://localhost:3001/clientes
+x-api-key: 446AE6DD89E64F7F9D8964B595035644</code></pre>
+
+                        <p>4. Criar um atendente (requer API key):</p>
+                        <pre><code>POST http://localhost:3001/atendentes
+Content-Type: application/json
+x-api-key: 446AE6DD89E64F7F9D8964B595035644
+
+{
+  "nome": "Atendente Exemplo",
+  "especialidade_id": "550e8400-e29b-41d4-a716-446655440000",
+  "telefone_celular": "11999999999",
+  "email": "atendente@email.com",
+  "data_contratacao": "2025-02-22T00:00:00.000Z",
+  "administrador": false
 }</code></pre>
                     </div>
 
@@ -423,7 +486,10 @@ Content-Type: application/json
                     <ol>
                         <li>Adicione um novo nó HTTP Request</li>
                         <li>Configure o método (GET, POST, etc)</li>
-                        <li>Adicione o header x-api-key</li>
+                        <li>Em Headers, adicione:
+                            <pre><code>x-api-key: 446AE6DD89E64F7F9D8964B595035644
+Content-Type: application/json</code></pre>
+                        </li>
                         <li>Para POST/PUT, adicione o corpo da requisição em JSON</li>
                     </ol>
 
@@ -432,7 +498,10 @@ Content-Type: application/json
                         <li>Use o bloco "HTTP Request"</li>
                         <li>Adicione a URL completa</li>
                         <li>Configure o método</li>
-                        <li>Adicione o header x-api-key</li>
+                        <li>Em Headers, adicione:
+                            <pre><code>x-api-key: 446AE6DD89E64F7F9D8964B595035644
+Content-Type: application/json</code></pre>
+                        </li>
                         <li>Para POST/PUT, adicione o corpo em JSON</li>
                     </ol>
                 </section>
@@ -470,6 +539,19 @@ Content-Type: application/json
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script>
         hljs.highlightAll();
+        
+        // Atualiza a URL base com o endereço atual
+        const urlBase = document.getElementById('urlBase');
+        const currentUrl = window.location.origin;
+        urlBase.textContent = currentUrl+'/api';
+
+        // Atualiza todas as URLs de exemplo com a URL base atual
+        document.querySelectorAll('pre code').forEach(block => {
+            const content = block.textContent;
+            if (content.includes('http://localhost:3001')) {
+                block.textContent = content.replace('http://localhost:3001', currentUrl);
+            }
+        });
     </script>
 </body>
 </html>

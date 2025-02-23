@@ -17,6 +17,7 @@ const atendenteRoutes = require('./routes/atendenteRoutes');
 const agendamentoRoutes = require('./routes/agendamentoRoutes');
 const especialidadeRoutes = require('./routes/especialidadeRoutes');
 const horarioRoutes = require('./routes/horarioRoutes');
+const configRoutes = require('./routes/configRoutes');
 
 // Configuração do Swagger
 const swaggerOptions = {
@@ -90,6 +91,7 @@ app.use('/api/atendentes', atendenteRoutes);
 app.use('/api/agendamentos', agendamentoRoutes);
 app.use('/api/especialidades', especialidadeRoutes);
 app.use('/api/horarios', horarioRoutes);
+app.use('/api/config', configRoutes);
 
 // Rota de teste para verificar se a API está funcionando
 app.get('/api/health', (req, res) => {

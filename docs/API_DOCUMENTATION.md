@@ -12,15 +12,17 @@
 
 A API de Agendamento é um serviço RESTful que permite gerenciar empresas, clientes, atendentes e agendamentos. Todas as respostas são em formato JSON.
 
-**URL Base**: `http://localhost:3001/api` (desenvolvimento)
+**URL Base**: A URL base será o endereço onde esta documentação está sendo acessada.
 
 ## Autenticação
 
 A API utiliza autenticação via chave API (API Key). Para todas as requisições (exceto criação de empresa), você deve incluir o header:
 
 ```
-x-api-key: SUA_CHAVE_API_AQUI
+x-api-key: [A chave API será carregada automaticamente do ambiente]
 ```
+
+> **Nota**: A chave API mostrada nesta documentação é carregada dinamicamente do ambiente onde a API está rodando. Ela será atualizada automaticamente se o valor for alterado no arquivo de configuração.
 
 ## Estrutura das Tabelas
 
@@ -231,11 +233,9 @@ Corpo da Requisição:
 
 ## Exemplos de Uso
 
-### Exemplo no Postman
-
-1. Criar uma empresa:
+### Criar Empresa (não requer API key)
 ```http
-POST http://localhost:3001/api/empresas
+POST /empresas
 Content-Type: application/json
 
 {
@@ -246,26 +246,77 @@ Content-Type: application/json
 }
 ```
 
-2. Usar a chave API retornada para as próximas requisições:
-```http
-GET http://localhost:3001/api/clientes
-x-api-key: SUA_CHAVE_API_AQUI
+Resposta de sucesso:
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "nome": "Minha Empresa",
+  "chave_api": "446AE6DD89E64F7F9D8964B595035644"
+}
 ```
 
-### Exemplo no n8n
+### Criar Cliente (requer API key)
+```http
+POST /clientes
+Content-Type: application/json
+x-api-key: [A chave API será carregada automaticamente do ambiente]
 
-1. Adicione um novo nó HTTP Request
-2. Configure o método (GET, POST, etc)
-3. Adicione o header x-api-key
-4. Para POST/PUT, adicione o corpo da requisição em JSON
+{
+  "nome": "Cliente Exemplo",
+  "cpf_cnpj": "123.456.789-00",
+  "telefone_celular": "11999999999",
+  "email": "cliente@email.com",
+  "senha": "senha123"
+}
+```
 
-### Exemplo no Typebot
+### Listar Clientes (requer API key)
+```http
+GET /clientes
+x-api-key: [A chave API será carregada automaticamente do ambiente]
+```
 
-1. Use o bloco "HTTP Request"
-2. Adicione a URL completa
-3. Configure o método
-4. Adicione o header x-api-key
-5. Para POST/PUT, adicione o corpo em JSON
+### Criar Atendente (requer API key)
+```http
+POST /atendentes
+Content-Type: application/json
+x-api-key: [A chave API será carregada automaticamente do ambiente]
+
+{
+  "nome": "Atendente Exemplo",
+  "especialidade_id": "550e8400-e29b-41d4-a716-446655440000",
+  "telefone_celular": "11999999999",
+  "email": "atendente@email.com",
+  "data_contratacao": "2025-02-22T00:00:00.000Z"
+}
+```
+
+### Criar Horário (requer API key)
+```http
+POST /horarios
+Content-Type: application/json
+x-api-key: [A chave API será carregada automaticamente do ambiente]
+
+{
+  "atendente_id": "550e8400-e29b-41d4-a716-446655440000",
+  "dia_semana": 1,
+  "hora_inicio": "09:00",
+  "hora_fim": "18:00"
+}
+```
+
+### Criar Agendamento (requer API key)
+```http
+POST /agendamentos
+Content-Type: application/json
+x-api-key: [A chave API será carregada automaticamente do ambiente]
+
+{
+  "cliente_id": "550e8400-e29b-41d4-a716-446655440000",
+  "atendente_id": "550e8400-e29b-41d4-a716-446655440001",
+  "data_agendamento": "2025-02-22T14:00:00.000Z"
+}
+```
 
 ## Códigos de Erro
 
