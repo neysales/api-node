@@ -6,6 +6,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const { sequelize } = require('./models');
 const path = require('path');
+const validarLicenca = require('./security/license');
 require('dotenv').config();
 
 const app = express();
@@ -100,7 +101,35 @@ app.get('/api/health', (req, res) => {
 
 async function startServer() {
   try {
+    // Validar licença antes de iniciar o servidor
+    const licenseKey = process.env.LICENSE_KEY;
+    console.log('Validando licença...');
+    
+    if (!licenseKey) {
+      console.error("\n=== ERRO DE LICENÇA ===");
+      console.error("Chave de licença não encontrada!");
+      console.error("Por favor, verifique se a variável LICENSE_KEY está definida no arquivo docker-compose.yml");
+      console.error("=====================================\n");
+      process.exit(1);
+    }
+
+    const licencaValida = await validarLicenca(licenseKey);
+    
+    if (!licencaValida) {
+      console.error("\n=== ERRO DE LICENÇA ===");
+      console.error("A aplicação não pode ser iniciada devido a um erro de licença.");
+      console.error("Por favor, verifique:");
+      console.error("1. Se você inseriu a chave de licença correta no arquivo docker-compose.yml");
+      console.error("2. Se sua conexão com a internet está funcionando");
+      console.error("3. Se o servidor de licenças está acessível");
+      console.error("\nSe o problema persistir, entre em contato com o suporte.");
+      console.error("=====================================\n");
+      process.exit(1);
+    }
+
+    console.log('Licença validada com sucesso!');
     console.log('Tentando conectar ao banco de dados...');
+    
     await sequelize.authenticate();
     console.log('Conexão com o banco de dados estabelecida com sucesso.');
 

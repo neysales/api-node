@@ -25,8 +25,9 @@ services:
         - traefik.http.middlewares.agendaapi-cors.headers.accesscontrolalloworiginlist=*
         - traefik.http.routers.agendaapi.middlewares=agendaapi-cors
     environment:
-      - ConnectionStrings__PostgresConnection=Host=postgres_postgres;Database=agenda;Username=postgres;Password=984011c5ca123ee9060092a2af946367
+      - ConnectionStrings__PostgresConnection=Host=185.217.127.77;Database=agenda;Username=postgres;Password=984011c5ca123ee9060092a2af946367
       - Authentication__ApiKey=446AE6DD89E64F7F9D8964B595035644
+      - LICENSE_KEY=AGD-M7I7C1KL-EYJ1C3VHCMLVIJOI-BEADAFDD
       - NODE_ENV=production
       - DEBUG=express:*
     volumes:
