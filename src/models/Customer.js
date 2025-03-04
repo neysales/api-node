@@ -1,43 +1,64 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Customer = sequelize.define('Customer', {
-  Id: {
-    type: DataTypes.UUID,
-    primaryKey: true,
-    defaultValue: DataTypes.UUIDV4
-  },
-  Name: {
-    type: DataTypes.STRING(100),
-    allowNull: false
-  },
-  MobileNumber: {
-    type: DataTypes.TEXT,
-    allowNull: false
-  },
-  Email: {
-    type: DataTypes.STRING(255)
-  },
-  RegistrationDate: {
-    type: DataTypes.DATE,
-    allowNull: false,
-    defaultValue: DataTypes.NOW
-  },
-  Password: {
-    type: DataTypes.TEXT,
-    allowNull: false
-  },
-  CompanyId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-    references: {
-      model: 'Companies',
-      key: 'Id'
+module.exports = (sequelize, DataTypes) => {
+  const Customer = sequelize.define('Customer', {
+    id: {
+      type: DataTypes.UUID,
+      primaryKey: true,
+      defaultValue: DataTypes.UUIDV4,
+      field: 'Id'
+    },
+    name: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      field: 'Name'
+    },
+    mobileNumber: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      field: 'MobileNumber'
+    },
+    email: {
+      type: DataTypes.STRING(255),
+      field: 'Email'
+    },
+    registrationDate: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      field: 'RegistrationDate'
+    },
+    companyId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      field: 'CompanyId',
+      references: {
+        model: 'Companies',
+        key: 'Id'
+      }
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+      field: 'IsActive'
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      field: 'CreatedAt'
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      field: 'UpdatedAt'
     }
-  }
-}, {
-  tableName: 'Customers',
-  timestamps: false
-});
+  }, {
+    tableName: 'Customers',
+    timestamps: true,
+    createdAt: 'CreatedAt',
+    updatedAt: 'UpdatedAt'
+  });
 
-module.exports = Customer;
+  return Customer;
+};

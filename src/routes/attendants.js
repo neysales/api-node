@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { apiKeyAuth } = require('../middleware/auth');
-const Attendant = require('../models/Attendant');
+const { Attendant } = require('../models');
 
 /**
  * @swagger
@@ -10,39 +10,39 @@ const Attendant = require('../models/Attendant');
  *     Attendant:
  *       type: object
  *       required:
- *         - Name
- *         - SpecialtyId
- *         - MobileNumber
- *         - Email
+ *         - name
+ *         - specialtyId
+ *         - mobileNumber
+ *         - email
+ *         - hiringDate
  *       properties:
- *         Id:
+ *         id:
  *           type: string
  *           format: uuid
- *           description: ID único do atendente
- *         Name:
+ *         name:
  *           type: string
- *           maxLength: 100
- *           description: Nome do atendente
- *         SpecialtyId:
+ *         specialtyId:
  *           type: string
  *           format: uuid
- *           description: ID da especialidade
- *         MobileNumber:
+ *         companyId:
  *           type: string
- *           description: Número do celular
- *         Email:
+ *           format: uuid
+ *         mobileNumber:
+ *           type: string
+ *         email:
  *           type: string
  *           format: email
- *           maxLength: 255
- *           description: Email do atendente
- *         HiringDate:
+ *         hiringDate:
  *           type: string
  *           format: date-time
- *           description: Data de contratação
- *         IsAdmin:
+ *         isAdmin:
  *           type: boolean
- *           description: Se o atendente é administrador
+ *         isActive:
+ *           type: boolean
  */
+
+// Todas as rotas requerem autenticação
+router.use(apiKeyAuth);
 
 /**
  * @swagger
@@ -61,11 +61,11 @@ const Attendant = require('../models/Attendant');
  *               items:
  *                 $ref: '#/components/schemas/Attendant'
  */
-router.get('/', apiKeyAuth, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const attendants = await Attendant.findAll({
       where: {
-        CompanyId: req.company.Id
+        companyId: req.company.id
       }
     });
     res.json(attendants);
@@ -96,12 +96,12 @@ router.get('/', apiKeyAuth, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Attendant'
  */
-router.get('/:id', apiKeyAuth, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const attendant = await Attendant.findOne({
       where: {
-        Id: req.params.id,
-        CompanyId: req.company.Id
+        id: req.params.id,
+        companyId: req.company.id
       }
     });
     if (!attendant) {
@@ -130,11 +130,11 @@ router.get('/:id', apiKeyAuth, async (req, res) => {
  *       201:
  *         description: Atendente criado com sucesso
  */
-router.post('/', apiKeyAuth, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const attendantData = {
       ...req.body,
-      CompanyId: req.company.Id
+      companyId: req.company.id
     };
     const attendant = await Attendant.create(attendantData);
     res.status(201).json(attendant);
@@ -163,12 +163,12 @@ router.post('/', apiKeyAuth, async (req, res) => {
  *           schema:
  *             $ref: '#/components/schemas/Attendant'
  */
-router.put('/:id', apiKeyAuth, async (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const attendant = await Attendant.findOne({
       where: {
-        Id: req.params.id,
-        CompanyId: req.company.Id
+        id: req.params.id,
+        companyId: req.company.id
       }
     });
     
@@ -197,12 +197,12 @@ router.put('/:id', apiKeyAuth, async (req, res) => {
  *         schema:
  *           type: string
  */
-router.delete('/:id', apiKeyAuth, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const attendant = await Attendant.findOne({
       where: {
-        Id: req.params.id,
-        CompanyId: req.company.Id
+        id: req.params.id,
+        companyId: req.company.id
       }
     });
     

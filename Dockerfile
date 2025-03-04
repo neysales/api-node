@@ -8,12 +8,16 @@ WORKDIR /app
 # Copiar arquivos de dependência
 COPY package*.json ./
 
-# Instalar dependências com retry
-RUN apk add --no-cache --virtual .build-deps alpine-sdk python3 && \
-    npm config set fetch-retry-maxtimeout 600000 && \
-    npm config set fetch-retry-mintimeout 100000 && \
-    npm install && \
-    apk del .build-deps
+# Instalar dependências com retry e ferramentas de build para bcrypt
+RUN apk add --no-cache --virtual .build-deps \
+    python3 \
+    make \
+    g++ \
+    && npm config set fetch-retry-maxtimeout 600000 \
+    && npm config set fetch-retry-mintimeout 100000 \
+    && npm install \
+    && npm rebuild bcrypt --build-from-source \
+    && apk del .build-deps
 
 # Copiar o código da aplicação
 COPY . .
@@ -22,4 +26,4 @@ COPY . .
 EXPOSE 3001
 
 # Comando para iniciar a aplicação
-CMD ["node", "src/server.js"]
+CMD ["npm", "start"]

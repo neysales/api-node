@@ -1,51 +1,64 @@
-const sequelize = require('../config/sequelize');
-const { DataTypes } = require('sequelize');
+const { Sequelize, DataTypes } = require('sequelize');
+const config = require('../config/database');
 
-// Importar modelos
-const Empresa = require('./Empresa')(sequelize, DataTypes);
-const Cliente = require('./Cliente')(sequelize, DataTypes);
-const Atendente = require('./Atendente')(sequelize, DataTypes);
-const Especialidade = require('./Especialidade')(sequelize, DataTypes);
-const Horario = require('./Horario')(sequelize, DataTypes);
-const Agendamento = require('./Agendamento')(sequelize, DataTypes);
+const env = process.env.NODE_ENV || 'development';
+const dbConfig = config[env];
 
-// Definir relacionamentos
-Empresa.hasMany(Cliente, { foreignKey: 'empresa_id' });
-Cliente.belongsTo(Empresa, { foreignKey: 'empresa_id' });
+const sequelize = new Sequelize(
+  dbConfig.database,
+  dbConfig.username,
+  dbConfig.password,
+  {
+    host: dbConfig.host,
+    port: dbConfig.port,
+    dialect: dbConfig.dialect,
+    define: dbConfig.define,
+    logging: console.log
+  }
+);
 
-Empresa.hasMany(Atendente, { foreignKey: 'empresa_id' });
-Atendente.belongsTo(Empresa, { foreignKey: 'empresa_id' });
+// Import models
+const Company = require('./Company')(sequelize, DataTypes);
+const Customer = require('./Customer')(sequelize, DataTypes);
+const Attendant = require('./Attendant')(sequelize, DataTypes);
+const Specialty = require('./Specialty')(sequelize, DataTypes);
+const Appointment = require('./Appointment')(sequelize, DataTypes);
+const Schedule = require('./Schedule')(sequelize, DataTypes);
 
-Empresa.hasMany(Especialidade, { foreignKey: 'empresa_id' });
-Especialidade.belongsTo(Empresa, { foreignKey: 'empresa_id' });
+// Define relationships
+Company.hasMany(Customer, { foreignKey: 'companyId' });
+Customer.belongsTo(Company, { foreignKey: 'companyId' });
 
-Atendente.belongsTo(Especialidade, { foreignKey: 'especialidade_id' });
-Especialidade.hasMany(Atendente, { foreignKey: 'especialidade_id' });
+Company.hasMany(Attendant, { foreignKey: 'companyId' });
+Attendant.belongsTo(Company, { foreignKey: 'companyId' });
 
-Empresa.hasMany(Horario, { foreignKey: 'empresa_id' });
-Horario.belongsTo(Empresa, { foreignKey: 'empresa_id' });
+Company.hasMany(Specialty, { foreignKey: 'companyId' });
+Specialty.belongsTo(Company, { foreignKey: 'companyId' });
 
-Atendente.hasMany(Horario, { foreignKey: 'atendente_id' });
-Horario.belongsTo(Atendente, { foreignKey: 'atendente_id' });
+Attendant.belongsTo(Specialty, { foreignKey: 'specialtyId' });
+Specialty.hasMany(Attendant, { foreignKey: 'specialtyId' });
 
-Empresa.hasMany(Agendamento, { foreignKey: 'empresa_id' });
-Agendamento.belongsTo(Empresa, { foreignKey: 'empresa_id' });
+Company.hasMany(Appointment, { foreignKey: 'companyId' });
+Appointment.belongsTo(Company, { foreignKey: 'companyId' });
 
-Cliente.hasMany(Agendamento, { foreignKey: 'cliente_id' });
-Agendamento.belongsTo(Cliente, { foreignKey: 'cliente_id' });
+Customer.hasMany(Appointment, { foreignKey: 'customerId' });
+Appointment.belongsTo(Customer, { foreignKey: 'customerId' });
 
-Atendente.hasMany(Agendamento, { foreignKey: 'atendente_id' });
-Agendamento.belongsTo(Atendente, { foreignKey: 'atendente_id' });
+Attendant.hasMany(Appointment, { foreignKey: 'attendantId' });
+Appointment.belongsTo(Attendant, { foreignKey: 'attendantId' });
 
-Horario.hasMany(Agendamento, { foreignKey: 'horario_id' });
-Agendamento.belongsTo(Horario, { foreignKey: 'horario_id' });
+Attendant.hasMany(Schedule, { foreignKey: 'attendantId' });
+Schedule.belongsTo(Attendant, { foreignKey: 'attendantId' });
 
-module.exports = {
+const db = {
   sequelize,
-  Empresa,
-  Cliente,
-  Atendente,
-  Especialidade,
-  Horario,
-  Agendamento
+  Sequelize,
+  Company,
+  Customer,
+  Attendant,
+  Specialty,
+  Appointment,
+  Schedule
 };
+
+module.exports = db;

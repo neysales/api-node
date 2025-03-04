@@ -12,12 +12,12 @@ require('dotenv').config();
 const app = express();
 
 // Importar rotas
-const empresaRoutes = require('./routes/empresaRoutes');
-const clienteRoutes = require('./routes/clienteRoutes');
-const atendenteRoutes = require('./routes/atendenteRoutes');
-const agendamentoRoutes = require('./routes/agendamentoRoutes');
-const especialidadeRoutes = require('./routes/especialidadeRoutes');
-const horarioRoutes = require('./routes/horarioRoutes');
+const empresaRoutes = require('./routes/companies');
+const clienteRoutes = require('./routes/customers');
+const atendenteRoutes = require('./routes/attendants');
+const agendamentoRoutes = require('./routes/appointments');
+const especialidadeRoutes = require('./routes/specialties');
+const horarioRoutes = require('./routes/schedules');
 const configRoutes = require('./routes/configRoutes');
 
 // Configuração do Swagger

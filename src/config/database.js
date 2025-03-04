@@ -1,40 +1,39 @@
-require('dotenv').config();
+const parseConnectionString = (connectionString) => {
+  if (!connectionString) {
+    throw new Error('Database connection string not provided. Please set ConnectionStrings__PostgresConnection in your docker-compose.yml');
+  }
+
+  const params = {};
+  connectionString.split(';').forEach(param => {
+    const [key, value] = param.split('=');
+    params[key.toLowerCase()] = value;
+  });
+  return params;
+};
+
+const getDbConfig = () => {
+  const connectionString = process.env.ConnectionStrings__PostgresConnection;
+  const dbParams = parseConnectionString(connectionString);
+
+  return {
+    dialect: 'postgres',
+    host: dbParams.host,
+    database: dbParams.database,
+    username: dbParams.username,
+    password: dbParams.password,
+    port: 5432,
+    define: {
+      timestamps: true,
+      underscored: false
+    },
+    logging: process.env.NODE_ENV === 'development' ? console.log : false
+  };
+};
+
+const config = getDbConfig();
 
 module.exports = {
-  development: {
-    dialect: 'postgres',
-    host: process.env.DB_HOST || '185.217.127.77',
-    database: process.env.DB_NAME || 'agenda',
-    username: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || '984011c5ca123ee9060092a2af946367',
-    port: process.env.DB_PORT || 5432,
-    define: {
-      timestamps: true,
-      underscored: false
-    }
-  },
-  test: {
-    dialect: 'postgres',
-    host: process.env.DB_HOST || '185.217.127.77',
-    database: process.env.DB_NAME || 'agenda',
-    username: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || '984011c5ca123ee9060092a2af946367',
-    port: process.env.DB_PORT || 5432,
-    define: {
-      timestamps: true,
-      underscored: false
-    }
-  },
-  production: {
-    dialect: 'postgres',
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT,
-    define: {
-      timestamps: true,
-      underscored: false
-    }
-  }
+  development: config,
+  test: config,
+  production: config
 };

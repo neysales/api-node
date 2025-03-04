@@ -1,30 +1,31 @@
-const { Empresa } = require('../models');
+const { sequelize } = require('../config/sequelize');
+const { Company } = require('../models');
 
-const authMiddleware = async (req, res, next) => {
+const apiKeyAuth = async (req, res, next) => {
   const apiKey = req.headers['x-api-key'];
   
   if (!apiKey) {
-    return res.status(401).json({ error: 'Chave API não fornecida' });
+    return res.status(401).json({ error: 'API key not provided' });
   }
 
   try {
-    const empresa = await Empresa.findOne({ 
+    const company = await Company.findOne({ 
       where: { 
-        chave_api: apiKey,
-        ativa: true 
+        apiKey: apiKey,
+        isActive: true 
       } 
     });
 
-    if (!empresa) {
-      return res.status(401).json({ error: 'Chave API inválida' });
+    if (!company) {
+      return res.status(401).json({ error: 'Invalid API key' });
     }
 
-    req.empresa = empresa;
+    req.company = company;
     next();
   } catch (error) {
-    console.error('Erro na autenticação:', error);
-    return res.status(500).json({ error: 'Erro interno do servidor' });
+    console.error('Error authenticating API key:', error);
+    res.status(500).json({ error: 'Internal server error during authentication' });
   }
 };
 
-module.exports = authMiddleware;
+module.exports = { apiKeyAuth };

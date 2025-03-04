@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { apiKeyAuth } = require('../middleware/auth');
-const Customer = require('../models/Customer');
+const { Customer } = require('../models');
 
 /**
  * @swagger
@@ -10,39 +10,29 @@ const Customer = require('../models/Customer');
  *     Customer:
  *       type: object
  *       required:
- *         - Name
- *         - MobileNumber
- *         - Password
- *         - CompanyId
+ *         - name
+ *         - mobileNumber
+ *         - companyId
  *       properties:
- *         Id:
+ *         id:
  *           type: string
  *           format: uuid
- *           description: ID único do cliente
- *         Name:
+ *         name:
  *           type: string
- *           maxLength: 100
- *           description: Nome do cliente
- *         MobileNumber:
+ *         mobileNumber:
  *           type: string
- *           description: Número do celular
- *         Email:
+ *         email:
  *           type: string
  *           format: email
- *           maxLength: 255
- *           description: Email do cliente
- *         RegistrationDate:
- *           type: string
- *           format: date-time
- *           description: Data de registro
- *         Password:
- *           type: string
- *           description: Senha do cliente
- *         CompanyId:
+ *         companyId:
  *           type: string
  *           format: uuid
- *           description: ID da empresa à qual o cliente pertence
+ *         isActive:
+ *           type: boolean
  */
+
+// Todas as rotas requerem autenticação
+router.use(apiKeyAuth);
 
 /**
  * @swagger
@@ -61,11 +51,11 @@ const Customer = require('../models/Customer');
  *               items:
  *                 $ref: '#/components/schemas/Customer'
  */
-router.get('/', apiKeyAuth, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const customers = await Customer.findAll({
       where: {
-        CompanyId: req.company.Id
+        companyId: req.company.id
       }
     });
     res.json(customers);
@@ -96,12 +86,12 @@ router.get('/', apiKeyAuth, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Customer'
  */
-router.get('/:id', apiKeyAuth, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const customer = await Customer.findOne({
       where: {
-        Id: req.params.id,
-        CompanyId: req.company.Id
+        id: req.params.id,
+        companyId: req.company.id
       }
     });
     if (!customer) {
@@ -130,11 +120,11 @@ router.get('/:id', apiKeyAuth, async (req, res) => {
  *       201:
  *         description: Cliente criado com sucesso
  */
-router.post('/', apiKeyAuth, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const customerData = {
       ...req.body,
-      CompanyId: req.company.Id
+      companyId: req.company.id
     };
     const customer = await Customer.create(customerData);
     res.status(201).json(customer);
@@ -163,12 +153,12 @@ router.post('/', apiKeyAuth, async (req, res) => {
  *           schema:
  *             $ref: '#/components/schemas/Customer'
  */
-router.put('/:id', apiKeyAuth, async (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const customer = await Customer.findOne({
       where: {
-        Id: req.params.id,
-        CompanyId: req.company.Id
+        id: req.params.id,
+        companyId: req.company.id
       }
     });
     
@@ -197,12 +187,12 @@ router.put('/:id', apiKeyAuth, async (req, res) => {
  *         schema:
  *           type: string
  */
-router.delete('/:id', apiKeyAuth, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const customer = await Customer.findOne({
       where: {
-        Id: req.params.id,
-        CompanyId: req.company.Id
+        id: req.params.id,
+        companyId: req.company.id
       }
     });
     
