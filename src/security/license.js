@@ -63,12 +63,11 @@ async function validarLicenca(chave) {
         });
 
         // Fazer a requisição para validar a licença
-        const { data } = await instance.post("https://licenca.agenderocom/api/validar-licenca", { 
+        instance.defaults.headers.common['x-api-key'] = process.env.Authentication__ApiKey;
+        const { data } = await instance.post("https://licenca.agendero.com/validar-licenca", { 
             chave, 
             mac 
         });
-
-        console.log("Licença validada com sucesso:", data);
         return true;
     } catch (error) {
         // Lista de códigos de erro que indicam problemas de conexão

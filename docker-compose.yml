@@ -15,7 +15,7 @@ services:
       labels:
         - traefik.enable=true
         - traefik.http.routers.agendaapi.rule=Host(`agendaapi.agendero.com`)
-        - traefik.http.services.agendaapi.loadbalancer.server.port=3001
+        - traefik.http.services.agendaapi.loadbalancer.server.port=3002
         - traefik.http.routers.agendaapi.service=agendaapi
         - traefik.http.routers.agendaapi.entrypoints=websecure
         - traefik.http.routers.agendaapi.tls.certresolver=letsencryptresolver
@@ -27,15 +27,15 @@ services:
     environment:
       # Database Configuration
       # Format: Host=your_host;Database=your_database;Username=your_username;Password=your_password
-      - ConnectionStrings__PostgresConnection=Host=postgres_postgres;Database=agenda;Username=postgres;Password=your_password_here
+      - ConnectionStrings__PostgresConnection=Host=185.217.127.77;Port=5432;Database=agenda;Username=postgres;Password=984011c5ca123ee9060092a2af946367
       
       # API Key for Authentication
       # Generate a unique key for your installation
-      - Authentication__ApiKey=your_api_key_here
+      - Authentication__ApiKey=AGD-M7VCVLEQ-EYJJBGLLBNRLIJOI-C7BCB741
       
       # License Key
       # Obtain from Agendero
-      - LICENSE_KEY=your_license_key_here
+      - LICENSE_KEY=AGD-M7VCVLEQ-EYJJBGLLBNRLIJOI-C7BCB741
       
       # Environment (production/development)
       - NODE_ENV=production

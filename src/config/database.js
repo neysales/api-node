@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const parseConnectionString = (connectionString) => {
   if (!connectionString) {
     throw new Error('Database connection string not provided. Please set ConnectionStrings__PostgresConnection in your docker-compose.yml');

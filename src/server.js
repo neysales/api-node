@@ -33,7 +33,7 @@ const swaggerOptions = {
       {
         url: process.env.NODE_ENV === 'production' 
           ? 'https://agendaapi.agendero.com'
-          : 'http://localhost:3001',
+          : 'http://localhost:3002',
         description: process.env.NODE_ENV === 'production' ? 'Servidor de Produção' : 'Servidor Local'
       }
     ],
@@ -133,7 +133,7 @@ async function startServer() {
     await sequelize.authenticate();
     console.log('Conexão com o banco de dados estabelecida com sucesso.');
 
-    const PORT = process.env.PORT || 3001;
+    const PORT = process.env.PORT || 3002;
     app.listen(PORT, () => {
       console.log(`Servidor rodando na porta ${PORT}`);
       console.log(`Documentação Swagger disponível em http://localhost:${PORT}/api-docs`);
