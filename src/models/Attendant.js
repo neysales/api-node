@@ -4,74 +4,75 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
-      field: 'Id'
+      field: 'id'
     },
     name: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(150),
       allowNull: false,
-      field: 'Name'
+      field: 'nome'
     },
     specialtyId: {
       type: DataTypes.UUID,
       allowNull: false,
-      field: 'SpecialtyId',
+      field: 'especialidade_id',
       references: {
-        model: 'Specialties',
-        key: 'Id'
+        model: 'especialidades',
+        key: 'id'
       }
     },
     companyId: {
       type: DataTypes.UUID,
       allowNull: false,
-      field: 'CompanyId',
+      field: 'empresa_id',
       references: {
-        model: 'Companies',
-        key: 'Id'
+        model: 'empresas',
+        key: 'id'
       }
     },
     mobileNumber: {
       type: DataTypes.TEXT,
       allowNull: false,
-      field: 'MobileNumber'
+      field: 'telefone_celular'
     },
     email: {
       type: DataTypes.STRING(255),
       allowNull: false,
-      field: 'Email'
+      field: 'email'
     },
     hiringDate: {
       type: DataTypes.DATE,
       allowNull: false,
-      field: 'HiringDate'
+      field: 'data_contratacao'
     },
     isAdmin: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,
-      field: 'IsAdmin'
+      field: 'administrador'
     },
     isActive: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true,
-      field: 'IsActive'
+      field: 'ativo'
     },
     createdAt: {
       type: DataTypes.DATE,
+      allowNull: false,
       defaultValue: DataTypes.NOW,
-      field: 'CreatedAt'
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      field: 'UpdatedAt'
+      field: 'data_cadastro'
     }
   }, {
-    tableName: 'Attendants',
-    timestamps: true,
-    createdAt: 'CreatedAt',
-    updatedAt: 'UpdatedAt'
+    tableName: 'atendentes',
+    timestamps: false
   });
+
+  Attendant.associate = function(models) {
+    Attendant.belongsTo(models.Company, { foreignKey: 'empresa_id', as: 'empresa' });
+    Attendant.belongsTo(models.Specialty, { foreignKey: 'especialidade_id', as: 'especialidade' });
+    Attendant.hasMany(models.Schedule, { foreignKey: 'atendente_id', as: 'horarios' });
+    Attendant.hasMany(models.Appointment, { foreignKey: 'atendente_id', as: 'agendamentos' });
+  };
 
   return Attendant;
 };

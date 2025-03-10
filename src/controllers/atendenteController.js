@@ -1,11 +1,12 @@
-const { Atendente, Especialidade } = require('../models');
+const { Attendant, Specialty } = require('../models');
 
 const getAllAtendentes = async (req, res) => {
   try {
-    const atendentes = await Atendente.findAll({
-      where: { empresa_id: req.empresa.id },
+    const atendentes = await Attendant.findAll({
+      where: { companyId: req.empresa.id },
       include: [{
-        model: Especialidade,
+        model: Specialty,
+        as: 'especialidade',
         attributes: ['nome', 'descricao']
       }]
     });
@@ -19,13 +20,14 @@ const getAllAtendentes = async (req, res) => {
 
 const getAtendenteById = async (req, res) => {
   try {
-    const atendente = await Atendente.findOne({
+    const atendente = await Attendant.findOne({
       where: { 
         id: req.params.id,
-        empresa_id: req.empresa.id
+        companyId: req.empresa.id
       },
       include: [{
-        model: Especialidade,
+        model: Specialty,
+        as: 'especialidade',
         attributes: ['nome', 'descricao']
       }]
     });
@@ -44,10 +46,10 @@ const getAtendenteById = async (req, res) => {
 const createAtendente = async (req, res) => {
   try {
     // Verificar se a especialidade existe e pertence à empresa
-    const especialidade = await Especialidade.findOne({
+    const especialidade = await Specialty.findOne({
       where: { 
-        id: req.body.especialidade_id,
-        empresa_id: req.empresa.id
+        id: req.body.specialtyId,
+        companyId: req.empresa.id
       }
     });
 
@@ -55,10 +57,14 @@ const createAtendente = async (req, res) => {
       return res.status(404).json({ error: 'Especialidade não encontrada' });
     }
 
-    const novoAtendente = await Atendente.create({
-      ...req.body,
-      empresa_id: req.empresa.id,
-      data_contratacao: req.body.data_contratacao || new Date()
+    const novoAtendente = await Attendant.create({
+      name: req.body.name,
+      email: req.body.email,
+      phone: req.body.phone,
+      specialtyId: req.body.specialtyId,
+      companyId: req.empresa.id,
+      isActive: req.body.isActive !== undefined ? req.body.isActive : true,
+      createdAt: new Date()
     });
 
     return res.status(201).json(novoAtendente);
@@ -70,31 +76,39 @@ const createAtendente = async (req, res) => {
 
 const updateAtendente = async (req, res) => {
   try {
-    const atendente = await Atendente.findOne({
+    const atendente = await Attendant.findOne({
       where: { 
         id: req.params.id,
-        empresa_id: req.empresa.id
+        companyId: req.empresa.id
       }
     });
-
+    
     if (!atendente) {
       return res.status(404).json({ error: 'Atendente não encontrado' });
     }
-
-    if (req.body.especialidade_id) {
-      const especialidade = await Especialidade.findOne({
+    
+    // Verificar se a especialidade existe e pertence à empresa
+    if (req.body.specialtyId) {
+      const especialidade = await Specialty.findOne({
         where: { 
-          id: req.body.especialidade_id,
-          empresa_id: req.empresa.id
+          id: req.body.specialtyId,
+          companyId: req.empresa.id
         }
       });
-
+      
       if (!especialidade) {
         return res.status(404).json({ error: 'Especialidade não encontrada' });
       }
     }
-
-    await atendente.update(req.body);
+    
+    await atendente.update({
+      name: req.body.name || atendente.name,
+      email: req.body.email || atendente.email,
+      phone: req.body.phone || atendente.phone,
+      specialtyId: req.body.specialtyId || atendente.specialtyId,
+      isActive: req.body.isActive !== undefined ? req.body.isActive : atendente.isActive
+    });
+    
     return res.json(atendente);
   } catch (error) {
     console.error('Erro ao atualizar atendente:', error);
@@ -104,21 +118,22 @@ const updateAtendente = async (req, res) => {
 
 const deleteAtendente = async (req, res) => {
   try {
-    const atendente = await Atendente.findOne({
+    const atendente = await Attendant.findOne({
       where: { 
         id: req.params.id,
-        empresa_id: req.empresa.id
+        companyId: req.empresa.id
       }
     });
-
+    
     if (!atendente) {
       return res.status(404).json({ error: 'Atendente não encontrado' });
     }
-
+    
     await atendente.destroy();
+    
     return res.status(204).send();
   } catch (error) {
-    console.error('Erro ao deletar atendente:', error);
+    console.error('Erro ao excluir atendente:', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 };

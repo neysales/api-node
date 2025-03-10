@@ -7,41 +7,41 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
-      field: 'Id'
+      field: 'id'
     },
     name: {
       type: DataTypes.STRING(100),
       allowNull: false,
-      field: 'Name'
+      field: 'nome'
     },
     mobileNumber: {
-      type: DataTypes.TEXT,
+      type: DataTypes.STRING(20),
       allowNull: false,
-      field: 'MobileNumber'
+      field: 'telefone_celular'
     },
     email: {
       type: DataTypes.STRING(255),
-      field: 'Email'
+      field: 'email'
     },
     registrationDate: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
-      field: 'RegistrationDate'
+      field: 'data_cadastro'
     },
     companyId: {
       type: DataTypes.UUID,
       allowNull: false,
-      field: 'CompanyId',
+      field: 'empresa_id',
       references: {
-        model: 'Companies',
-        key: 'Id'
+        model: 'empresas',
+        key: 'id'
       }
     },
     isActive: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true,
-      field: 'IsActive'
+      field: 'ativo'
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -54,11 +54,16 @@ module.exports = (sequelize, DataTypes) => {
       field: 'UpdatedAt'
     }
   }, {
-    tableName: 'Customers',
+    tableName: 'clientes',
     timestamps: true,
     createdAt: 'CreatedAt',
     updatedAt: 'UpdatedAt'
   });
+
+  Customer.associate = function(models) {
+    Customer.belongsTo(models.Company, { foreignKey: 'empresa_id', as: 'empresa' });
+    Customer.hasMany(models.Appointment, { foreignKey: 'cliente_id', as: 'agendamentos' });
+  };
 
   return Customer;
 };

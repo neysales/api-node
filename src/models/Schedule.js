@@ -6,54 +6,52 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
-      field: 'Id'
+      field: 'id'
     },
     attendantId: {
       type: DataTypes.UUID,
       allowNull: false,
-      field: 'AttendantId',
+      field: 'atendente_id',
       references: {
-        model: 'Attendants',
-        key: 'Id'
+        model: 'atendentes',
+        key: 'id'
       }
     },
     dayOfWeek: {
-      type: DataTypes.TEXT,
+      type: DataTypes.STRING(20),
       allowNull: false,
-      field: 'DayOfWeek'
+      field: 'dia_semana'
     },
     startTime: {
-      type: DataTypes.DATE,
+      type: DataTypes.TIME,
       allowNull: false,
-      field: 'StartTime'
+      field: 'hora_inicio'
     },
     endTime: {
-      type: DataTypes.DATE,
+      type: DataTypes.TIME,
       allowNull: false,
-      field: 'EndTime'
+      field: 'hora_fim'
     },
     isActive: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true,
-      field: 'IsActive'
+      field: 'ativo'
     },
     createdAt: {
       type: DataTypes.DATE,
+      allowNull: false,
       defaultValue: DataTypes.NOW,
-      field: 'CreatedAt'
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      field: 'UpdatedAt'
+      field: 'data_cadastro'
     }
   }, {
-    tableName: 'Schedules',
-    timestamps: true,
-    createdAt: 'CreatedAt',
-    updatedAt: 'UpdatedAt'
+    tableName: 'horarios',
+    timestamps: false
   });
+
+  Schedule.associate = function(models) {
+    Schedule.belongsTo(models.Attendant, { foreignKey: 'atendente_id', as: 'atendente' });
+  };
 
   return Schedule;
 };

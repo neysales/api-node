@@ -504,7 +504,7 @@
                     <h3>Exemplo no Postman</h3>
                     <div class="code-block">
                         <p>1. Criar uma empresa (não requer API key):</p>
-                        <pre><code>POST http://localhost:3001/empresas
+                        <pre><code>POST http://localhost:3002/empresas
 Content-Type: application/json
 
 {
@@ -533,7 +533,7 @@ Content-Type: application/json
 }</code></pre>
 
                         <p>2. Criar um cliente (requer API key):</p>
-                        <pre><code>POST http://localhost:3001/clientes
+                        <pre><code>POST http://localhost:3002/clientes
 Content-Type: application/json
 x-api-key: 446AE6DD89E64F7F9D8964B595035644
 
@@ -557,11 +557,11 @@ x-api-key: 446AE6DD89E64F7F9D8964B595035644
 }</code></pre>
 
                         <p>3. Listar clientes (requer API key):</p>
-                        <pre><code>GET http://localhost:3001/clientes
+                        <pre><code>GET http://localhost:3002/clientes
 x-api-key: 446AE6DD89E64F7F9D8964B595035644</code></pre>
 
                         <p>4. Criar um atendente (requer API key):</p>
-                        <pre><code>POST http://localhost:3001/atendentes
+                        <pre><code>POST http://localhost:3002/atendentes
 Content-Type: application/json
 x-api-key: 446AE6DD89E64F7F9D8964B595035644
 
@@ -641,8 +641,8 @@ Content-Type: application/json</code></pre>
         // Atualiza todas as URLs de exemplo com a URL base atual
         document.querySelectorAll('pre code').forEach(block => {
             const content = block.textContent;
-            if (content.includes('http://localhost:3001')) {
-                block.textContent = content.replace('http://localhost:3001', currentUrl);
+            if (content.includes('http://localhost:3002')) {
+                block.textContent = content.replace('http://localhost:3002', currentUrl);
             }
         });
     </script>

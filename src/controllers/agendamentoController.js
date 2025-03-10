@@ -1,21 +1,19 @@
-const { Agendamento, Cliente, Atendente, Horario } = require('../models');
+const { Appointment, Customer, Attendant } = require('../models');
 
 const getAllAgendamentos = async (req, res) => {
   try {
-    const agendamentos = await Agendamento.findAll({
-      where: { empresa_id: req.empresa.id },
+    const agendamentos = await Appointment.findAll({
+      where: { companyId: req.empresa.id },
       include: [
         {
-          model: Cliente,
+          model: Customer,
+          as: 'cliente',
           attributes: ['nome', 'telefone_celular']
         },
         {
-          model: Atendente,
+          model: Attendant,
+          as: 'atendente',
           attributes: ['nome']
-        },
-        {
-          model: Horario,
-          attributes: ['dia_semana', 'hora_inicio', 'hora_fim']
         }
       ]
     });
@@ -29,31 +27,29 @@ const getAllAgendamentos = async (req, res) => {
 
 const getAgendamentoById = async (req, res) => {
   try {
-    const agendamento = await Agendamento.findOne({
+    const agendamento = await Appointment.findOne({
       where: { 
         id: req.params.id,
-        empresa_id: req.empresa.id
+        companyId: req.empresa.id
       },
       include: [
         {
-          model: Cliente,
+          model: Customer,
+          as: 'cliente',
           attributes: ['nome', 'telefone_celular']
         },
         {
-          model: Atendente,
+          model: Attendant,
+          as: 'atendente',
           attributes: ['nome']
-        },
-        {
-          model: Horario,
-          attributes: ['dia_semana', 'hora_inicio', 'hora_fim']
         }
       ]
     });
-
+    
     if (!agendamento) {
       return res.status(404).json({ error: 'Agendamento não encontrado' });
     }
-
+    
     return res.json(agendamento);
   } catch (error) {
     console.error('Erro ao buscar agendamento:', error);
@@ -64,10 +60,9 @@ const getAgendamentoById = async (req, res) => {
 const createAgendamento = async (req, res) => {
   try {
     // Verificar se o cliente existe e pertence à empresa
-    const cliente = await Cliente.findOne({
+    const cliente = await Customer.findOne({
       where: { 
-        id: req.body.cliente_id,
-        empresa_id: req.empresa.id
+        id: req.body.customerId
       }
     });
 
@@ -76,10 +71,10 @@ const createAgendamento = async (req, res) => {
     }
 
     // Verificar se o atendente existe e pertence à empresa
-    const atendente = await Atendente.findOne({
+    const atendente = await Attendant.findOne({
       where: { 
-        id: req.body.atendente_id,
-        empresa_id: req.empresa.id
+        id: req.body.attendantId,
+        companyId: req.empresa.id
       }
     });
 
@@ -87,35 +82,28 @@ const createAgendamento = async (req, res) => {
       return res.status(404).json({ error: 'Atendente não encontrado' });
     }
 
-    // Verificar se o horário existe e pertence à empresa
-    const horario = await Horario.findOne({
-      where: { 
-        id: req.body.horario_id,
-        empresa_id: req.empresa.id
-      }
-    });
-
-    if (!horario) {
-      return res.status(404).json({ error: 'Horário não encontrado' });
-    }
-
-    // Verificar se já existe agendamento para o mesmo horário
-    const agendamentoExistente = await Agendamento.findOne({
+    // Verificar se já existe agendamento para o mesmo horário e data
+    const agendamentoExistente = await Appointment.findOne({
       where: {
-        horario_id: req.body.horario_id,
-        data: req.body.data,
+        attendantId: req.body.attendantId,
+        date: req.body.date,
         status: 'confirmado'
       }
     });
 
     if (agendamentoExistente) {
-      return res.status(400).json({ error: 'Horário já está agendado' });
+      return res.status(400).json({ error: 'Já existe um agendamento para este horário' });
     }
 
-    const novoAgendamento = await Agendamento.create({
-      ...req.body,
-      empresa_id: req.empresa.id,
-      status: req.body.status || 'confirmado'
+    const novoAgendamento = await Appointment.create({
+      customerId: req.body.customerId,
+      companyId: req.empresa.id,
+      attendantId: req.body.attendantId,
+      date: req.body.date,
+      isServiceDone: false,
+      observations: req.body.observations || null,
+      status: req.body.status || 'agendado',
+      createdAt: new Date()
     });
 
     return res.status(201).json(novoAgendamento);
@@ -127,71 +115,49 @@ const createAgendamento = async (req, res) => {
 
 const updateAgendamento = async (req, res) => {
   try {
-    const agendamento = await Agendamento.findOne({
+    const agendamento = await Appointment.findOne({
       where: { 
         id: req.params.id,
-        empresa_id: req.empresa.id
+        companyId: req.empresa.id
       }
     });
-
+    
     if (!agendamento) {
       return res.status(404).json({ error: 'Agendamento não encontrado' });
     }
-
-    if (req.body.cliente_id) {
-      const cliente = await Cliente.findOne({
-        where: { 
-          id: req.body.cliente_id,
-          empresa_id: req.empresa.id
-        }
-      });
-
+    
+    // Verificar se o cliente existe
+    if (req.body.customerId) {
+      const cliente = await Customer.findByPk(req.body.customerId);
       if (!cliente) {
         return res.status(404).json({ error: 'Cliente não encontrado' });
       }
     }
-
-    if (req.body.atendente_id) {
-      const atendente = await Atendente.findOne({
+    
+    // Verificar se o atendente existe e pertence à empresa
+    if (req.body.attendantId) {
+      const atendente = await Attendant.findOne({
         where: { 
-          id: req.body.atendente_id,
-          empresa_id: req.empresa.id
+          id: req.body.attendantId,
+          companyId: req.empresa.id
         }
       });
-
+      
       if (!atendente) {
         return res.status(404).json({ error: 'Atendente não encontrado' });
       }
     }
-
-    if (req.body.horario_id) {
-      const horario = await Horario.findOne({
-        where: { 
-          id: req.body.horario_id,
-          empresa_id: req.empresa.id
-        }
-      });
-
-      if (!horario) {
-        return res.status(404).json({ error: 'Horário não encontrado' });
-      }
-
-      // Verificar se já existe agendamento para o novo horário
-      const agendamentoExistente = await Agendamento.findOne({
-        where: {
-          horario_id: req.body.horario_id,
-          data: req.body.data || agendamento.data,
-          status: 'confirmado',
-          id: { [Op.ne]: req.params.id }
-        }
-      });
-
-      if (agendamentoExistente) {
-        return res.status(400).json({ error: 'Horário já está agendado' });
-      }
-    }
-
-    await agendamento.update(req.body);
+    
+    // Atualizar o agendamento
+    await agendamento.update({
+      customerId: req.body.customerId || agendamento.customerId,
+      attendantId: req.body.attendantId || agendamento.attendantId,
+      date: req.body.date || agendamento.date,
+      isServiceDone: req.body.isServiceDone !== undefined ? req.body.isServiceDone : agendamento.isServiceDone,
+      observations: req.body.observations !== undefined ? req.body.observations : agendamento.observations,
+      status: req.body.status || agendamento.status
+    });
+    
     return res.json(agendamento);
   } catch (error) {
     console.error('Erro ao atualizar agendamento:', error);
@@ -201,21 +167,22 @@ const updateAgendamento = async (req, res) => {
 
 const deleteAgendamento = async (req, res) => {
   try {
-    const agendamento = await Agendamento.findOne({
+    const agendamento = await Appointment.findOne({
       where: { 
         id: req.params.id,
-        empresa_id: req.empresa.id
+        companyId: req.empresa.id
       }
     });
-
+    
     if (!agendamento) {
       return res.status(404).json({ error: 'Agendamento não encontrado' });
     }
-
+    
     await agendamento.destroy();
+    
     return res.status(204).send();
   } catch (error) {
-    console.error('Erro ao deletar agendamento:', error);
+    console.error('Erro ao excluir agendamento:', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 };

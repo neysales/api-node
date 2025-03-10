@@ -23,7 +23,7 @@ RUN apk add --no-cache --virtual .build-deps \
 COPY . .
 
 # Expor a porta
-EXPOSE 3001
+EXPOSE 3002
 
 # Comando para iniciar a aplicação
 CMD ["npm", "start"]

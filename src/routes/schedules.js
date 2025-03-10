@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { apiKeyAuth } = require('../middleware/auth');
-const Schedule = require('../models/Schedule');
+const horarioController = require('../controllers/horarioController');
 
 /**
  * @swagger
@@ -10,30 +10,37 @@ const Schedule = require('../models/Schedule');
  *     Schedule:
  *       type: object
  *       required:
- *         - AttendantId
- *         - DayOfWeek
- *         - StartTime
- *         - EndTime
+ *         - attendantId
+ *         - dayOfWeek
+ *         - startTime
+ *         - endTime
  *       properties:
- *         Id:
+ *         id:
  *           type: string
  *           format: uuid
  *           description: ID único do horário
- *         AttendantId:
+ *         attendantId:
  *           type: string
  *           format: uuid
  *           description: ID do atendente
- *         DayOfWeek:
+ *         dayOfWeek:
  *           type: string
  *           description: Dia da semana
- *         StartTime:
+ *         startTime:
  *           type: string
- *           format: date-time
+ *           format: time
  *           description: Horário de início
- *         EndTime:
+ *         endTime:
+ *           type: string
+ *           format: time
+ *           description: Horário de término
+ *         isActive:
+ *           type: boolean
+ *           description: Indica se o horário está ativo
+ *         createdAt:
  *           type: string
  *           format: date-time
- *           description: Horário de término
+ *           description: Data de cadastro do horário
  */
 
 /**
@@ -52,51 +59,38 @@ const Schedule = require('../models/Schedule');
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Schedule'
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.get('/', apiKeyAuth, async (req, res) => {
-  try {
-    const schedules = await Schedule.findAll();
-    res.json(schedules);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.get('/', apiKeyAuth, horarioController.getAllHorarios);
 
 /**
  * @swagger
  * /api/schedules/{id}:
  *   get:
- *     summary: Busca um horário pelo ID
+ *     summary: Obtém um horário pelo ID
+ *     security:
+ *       - ApiKeyAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *           format: uuid
- *     security:
- *       - ApiKeyAuth: []
+ *         description: ID do horário
  *     responses:
  *       200:
- *         description: Horário encontrado
+ *         description: Detalhes do horário
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Schedule'
  *       404:
  *         description: Horário não encontrado
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.get('/:id', apiKeyAuth, async (req, res) => {
-  try {
-    const schedule = await Schedule.findByPk(req.params.id);
-    if (!schedule) {
-      return res.status(404).json({ error: 'Horário não encontrado' });
-    }
-    res.json(schedule);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.get('/:id', apiKeyAuth, horarioController.getHorarioById);
 
 /**
  * @swagger
@@ -110,7 +104,26 @@ router.get('/:id', apiKeyAuth, async (req, res) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Schedule'
+ *             type: object
+ *             required:
+ *               - attendantId
+ *               - dayOfWeek
+ *               - startTime
+ *               - endTime
+ *             properties:
+ *               attendantId:
+ *                 type: string
+ *                 format: uuid
+ *               dayOfWeek:
+ *                 type: string
+ *               startTime:
+ *                 type: string
+ *                 format: time
+ *               endTime:
+ *                 type: string
+ *                 format: time
+ *               isActive:
+ *                 type: boolean
  *     responses:
  *       201:
  *         description: Horário criado com sucesso
@@ -118,36 +131,49 @@ router.get('/:id', apiKeyAuth, async (req, res) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Schedule'
+ *       400:
+ *         description: Dados inválidos
+ *       404:
+ *         description: Atendente não encontrado
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.post('/', apiKeyAuth, async (req, res) => {
-  try {
-    const schedule = await Schedule.create(req.body);
-    res.status(201).json(schedule);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
+router.post('/', apiKeyAuth, horarioController.createHorario);
 
 /**
  * @swagger
  * /api/schedules/{id}:
  *   put:
- *     summary: Atualiza um horário
+ *     summary: Atualiza um horário existente
+ *     security:
+ *       - ApiKeyAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *           format: uuid
- *     security:
- *       - ApiKeyAuth: []
+ *         description: ID do horário
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Schedule'
+ *             type: object
+ *             properties:
+ *               attendantId:
+ *                 type: string
+ *                 format: uuid
+ *               dayOfWeek:
+ *                 type: string
+ *               startTime:
+ *                 type: string
+ *                 format: time
+ *               endTime:
+ *                 type: string
+ *                 format: time
+ *               isActive:
+ *                 type: boolean
  *     responses:
  *       200:
  *         description: Horário atualizado com sucesso
@@ -155,53 +181,37 @@ router.post('/', apiKeyAuth, async (req, res) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Schedule'
+ *       400:
+ *         description: Dados inválidos
  *       404:
- *         description: Horário não encontrado
+ *         description: Horário ou atendente não encontrado
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.put('/:id', apiKeyAuth, async (req, res) => {
-  try {
-    const schedule = await Schedule.findByPk(req.params.id);
-    if (!schedule) {
-      return res.status(404).json({ error: 'Horário não encontrado' });
-    }
-    await schedule.update(req.body);
-    res.json(schedule);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
+router.put('/:id', apiKeyAuth, horarioController.updateHorario);
 
 /**
  * @swagger
  * /api/schedules/{id}:
  *   delete:
  *     summary: Remove um horário
+ *     security:
+ *       - ApiKeyAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *           format: uuid
- *     security:
- *       - ApiKeyAuth: []
+ *         description: ID do horário
  *     responses:
  *       204:
  *         description: Horário removido com sucesso
  *       404:
  *         description: Horário não encontrado
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.delete('/:id', apiKeyAuth, async (req, res) => {
-  try {
-    const schedule = await Schedule.findByPk(req.params.id);
-    if (!schedule) {
-      return res.status(404).json({ error: 'Horário não encontrado' });
-    }
-    await schedule.destroy();
-    res.status(204).send();
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.delete('/:id', apiKeyAuth, horarioController.deleteHorario);
 
 module.exports = router;

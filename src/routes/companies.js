@@ -3,6 +3,7 @@ const router = express.Router();
 const { apiKeyAuth } = require('../middleware/auth');
 const { Company } = require('../models');
 const crypto = require('crypto');
+const empresaController = require('../controllers/empresaController');
 
 /**
  * @swagger
@@ -81,11 +82,11 @@ const crypto = require('crypto');
  * @swagger
  * /api/companies/check:
  *   get:
- *     summary: Verifica se existe alguma empresa cadastrada
+ *     summary: Verifica se existe uma empresa ativa
  *     tags: [Companies]
  *     responses:
  *       200:
- *         description: Retorna se existe empresa e a primeira empresa encontrada
+ *         description: Retorna se existe uma empresa ativa e sua chave API
  *         content:
  *           application/json:
  *             schema:
@@ -93,31 +94,12 @@ const crypto = require('crypto');
  *               properties:
  *                 exists:
  *                   type: boolean
- *                 apiKey:
+ *                   description: Indica se existe uma empresa ativa
+ *                 chave_api:
  *                   type: string
- *                   format: uuid
+ *                   description: Chave API da empresa, se existir
  */
-router.get('/check', async (req, res) => {
-  try {
-    console.log('Verificando empresas ativas...');
-    const company = await Company.findOne({
-      where: { isActive: true }
-    });
-
-    console.log('Resultado da verificação:', company ? 'Empresa encontrada' : 'Nenhuma empresa encontrada');
-    
-    res.json({
-      exists: !!company,
-      apiKey: company ? company.apiKey : null
-    });
-  } catch (error) {
-    console.error('Erro ao verificar empresas:', {
-      error: error.message,
-      stack: error.stack
-    });
-    res.status(500).json({ error: 'Erro ao verificar empresas: ' + error.message });
-  }
-});
+router.get('/check', empresaController.checkEmpresa);
 
 /**
  * @swagger

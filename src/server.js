@@ -19,6 +19,17 @@ const agendamentoRoutes = require('./routes/appointments');
 const especialidadeRoutes = require('./routes/specialties');
 const horarioRoutes = require('./routes/schedules');
 const configRoutes = require('./routes/configRoutes');
+const aiAgendamentoRoutes = require('./routes/aiAgendamentoRoutes');
+const companyCheckRoutes = require('./routes/company-check');
+
+// Importar adaptadores de rotas
+const empresaAdaptador = require('./routes/adaptadores/empresas');
+const clienteAdaptador = require('./routes/adaptadores/clientes');
+const companyCheckAdaptador = require('./routes/adaptadores/company-check');
+
+// Importar middlewares
+const { apiKeyAuth } = require('./middleware/auth');
+const { isolamentoDados } = require('./middleware/isolamento');
 
 // Configuração do Swagger
 const swaggerOptions = {
@@ -86,13 +97,24 @@ app.get('/docs', (req, res) => {
 });
 
 // Registrar rotas
-app.use('/api/empresas', empresaRoutes);
-app.use('/api/clientes', clienteRoutes);
-app.use('/api/atendentes', atendenteRoutes);
-app.use('/api/agendamentos', agendamentoRoutes);
-app.use('/api/especialidades', especialidadeRoutes);
-app.use('/api/horarios', horarioRoutes);
-app.use('/api/config', configRoutes);
+// Usar adaptadores quando disponíveis, caso contrário usar as rotas originais
+// Importante: Rotas mais específicas devem vir antes das mais genéricas
+
+// Rotas públicas (não requerem autenticação)
+app.use('/api/companies/check', companyCheckAdaptador);
+app.use('/api/company-check', companyCheckAdaptador);
+
+// Rotas protegidas (requerem autenticação e isolamento de dados)
+app.use('/api/companies', apiKeyAuth, isolamentoDados, empresaAdaptador); 
+app.use('/api/empresas', apiKeyAuth, isolamentoDados, empresaAdaptador);
+app.use('/api/clientes', apiKeyAuth, isolamentoDados, clienteAdaptador);
+app.use('/api/customers', apiKeyAuth, isolamentoDados, clienteAdaptador); 
+app.use('/api/atendentes', apiKeyAuth, isolamentoDados, atendenteRoutes);
+app.use('/api/agendamentos', apiKeyAuth, isolamentoDados, agendamentoRoutes);
+app.use('/api/especialidades', apiKeyAuth, isolamentoDados, especialidadeRoutes);
+app.use('/api/horarios', apiKeyAuth, isolamentoDados, horarioRoutes);
+app.use('/api/config', apiKeyAuth, isolamentoDados, configRoutes);
+app.use('/api/ai-agendamento', apiKeyAuth, isolamentoDados, aiAgendamentoRoutes);
 
 // Rota de teste para verificar se a API está funcionando
 app.get('/api/health', (req, res) => {

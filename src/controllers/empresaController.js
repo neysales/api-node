@@ -1,11 +1,13 @@
-const { Empresa } = require('../models');
+const { Company } = require('../models');
 const { v4: uuidv4 } = require('uuid');
 
 const checkEmpresa = async (req, res) => {
   try {
-    const empresa = await Empresa.findOne({ where: { ativa: true } });
+    console.log('Verificando empresa ativa...');
+    const empresa = await Company.findOne({ where: { ativa: true } });
+    console.log('Resultado da consulta:', empresa);
     if (empresa) {
-      return res.json({ exists: true, chave_api: empresa.chave_api });
+      return res.json({ exists: true, chave_api: empresa.chaveApi });
     }
     return res.json({ exists: false });
   } catch (error) {
@@ -16,16 +18,33 @@ const checkEmpresa = async (req, res) => {
 
 const createEmpresa = async (req, res) => {
   try {
-    const empresaExistente = await Empresa.findOne({ where: { ativa: true } });
+    const empresaExistente = await Company.findOne({ where: { ativa: true } });
     if (empresaExistente) {
       return res.status(409).json({ error: 'Já existe uma empresa ativa cadastrada' });
     }
 
-    const novaEmpresa = await Empresa.create({
-      ...req.body,
+    const novaEmpresa = await Company.create({
+      nome: req.body.nome,
+      atividade: req.body.atividade,
+      responsavel: req.body.responsavel,
+      enderecoRua: req.body.enderecoRua,
+      enderecoCidade: req.body.enderecoCidade,
+      enderecoEstado: req.body.enderecoEstado,
+      enderecoBairro: req.body.enderecoBairro,
+      enderecoCep: req.body.enderecoCep,
+      enderecoPais: req.body.enderecoPais,
+      enderecoComplemento: req.body.enderecoComplemento,
+      enderecoNumero: req.body.enderecoNumero,
+      telefoneFixo: req.body.telefoneFixo,
+      telefoneCelular: req.body.telefoneCelular,
+      telefoneWhatsapp: req.body.telefoneWhatsapp,
+      email: req.body.email,
       ativa: true,
-      data_cadastro: new Date(),
-      chave_api: uuidv4()
+      dataCadastro: new Date(),
+      chaveApi: uuidv4(),
+      aiProvider: req.body.aiProvider || 'openai',
+      aiApiKey: req.body.aiApiKey,
+      aiModel: req.body.aiModel || 'gpt-3.5-turbo'
     });
 
     return res.status(201).json(novaEmpresa);

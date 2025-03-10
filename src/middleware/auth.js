@@ -1,30 +1,33 @@
-const { sequelize } = require('../config/sequelize');
+const { Sequelize } = require('sequelize');
+const sequelize = require('../models').sequelize;
 const { Company } = require('../models');
 
 const apiKeyAuth = async (req, res, next) => {
   const apiKey = req.headers['x-api-key'];
   
   if (!apiKey) {
-    return res.status(401).json({ error: 'API key not provided' });
+    return res.status(401).json({ error: 'Chave de API não fornecida' });
   }
 
   try {
-    const company = await Company.findOne({ 
-      where: { 
-        apiKey: apiKey,
-        isActive: true 
-      } 
-    });
+    // Usar parâmetros na consulta SQL para evitar injeção SQL
+    const [companies] = await sequelize.query(
+      `SELECT * FROM empresas WHERE chave_api = ? AND ativa = true LIMIT 1`,
+      {
+        replacements: [apiKey],
+        type: sequelize.QueryTypes.SELECT
+      }
+    );
 
-    if (!company) {
-      return res.status(401).json({ error: 'Invalid API key' });
+    if (companies.length === 0) {
+      return res.status(401).json({ error: 'Chave de API inválida' });
     }
 
-    req.company = company;
+    req.company = companies[0];
     next();
   } catch (error) {
-    console.error('Error authenticating API key:', error);
-    res.status(500).json({ error: 'Internal server error during authentication' });
+    console.error('Erro ao autenticar chave de API:', error);
+    res.status(500).json({ error: 'Erro interno durante a autenticação' });
   }
 };
 

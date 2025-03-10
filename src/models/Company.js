@@ -7,104 +7,125 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
-      field: 'Id'
+      field: 'id'
     },
-    name: {
-      type: DataTypes.TEXT,
+    nome: {
+      type: DataTypes.STRING(150),
       allowNull: false,
-      field: 'Name'
+      field: 'nome'
     },
-    activity: {
-      type: DataTypes.TEXT,
+    atividade: {
+      type: DataTypes.STRING(150),
       allowNull: false,
-      field: 'Activity'
+      field: 'atividade'
     },
-    responsible: {
-      type: DataTypes.TEXT,
+    responsavel: {
+      type: DataTypes.STRING(150),
       allowNull: false,
-      field: 'Responsible'
+      field: 'responsavel'
     },
-    addressStreet: {
+    enderecoRua: {
       type: DataTypes.TEXT,
-      field: 'Address_Street'
+      field: 'endereco_rua'
     },
-    addressCity: {
+    enderecoCidade: {
       type: DataTypes.TEXT,
-      field: 'Address_City'
+      field: 'endereco_cidade'
     },
-    addressState: {
+    enderecoEstado: {
       type: DataTypes.TEXT,
-      field: 'Address_State'
+      field: 'endereco_estado'
     },
-    addressPostalCode: {
+    enderecoBairro: {
       type: DataTypes.TEXT,
-      field: 'Address_PostalCode'
+      field: 'endereco_bairro'
     },
-    addressCountry: {
+    enderecoCep: {
       type: DataTypes.TEXT,
-      field: 'Address_Country'
+      field: 'endereco_cep'
     },
-    addressAdditionalInfo: {
+    enderecoPais: {
       type: DataTypes.TEXT,
-      field: 'Address_AdditionalInfo'
+      field: 'endereco_pais'
     },
-    addressNumber: {
+    enderecoComplemento: {
       type: DataTypes.TEXT,
-      field: 'Address_Number'
+      field: 'endereco_complemento'
     },
-    phoneNumber: {
+    enderecoNumero: {
       type: DataTypes.TEXT,
-      field: 'PhoneNumber'
+      field: 'endereco_numero'
     },
-    mobileNumber: {
+    telefoneFixo: {
       type: DataTypes.TEXT,
-      allowNull: false,
-      field: 'MobileNumber'
+      field: 'telefone_fixo'
+    },
+    telefoneCelular: {
+      type: DataTypes.TEXT,
+      field: 'telefone_celular'
+    },
+    telefoneWhatsapp: {
+      type: DataTypes.TEXT,
+      field: 'telefone_whatsapp'
     },
     email: {
-      type: DataTypes.TEXT,
-      field: 'Email'
+      type: DataTypes.STRING(255),
+      field: 'email'
     },
-    cnpj: {
-      type: DataTypes.TEXT,
-      field: 'CNPJ'
+    chaveApi: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      defaultValue: '00000000-0000-0000-0000-000000000000',
+      field: 'chave_api'
     },
-    logo: {
-      type: DataTypes.TEXT,
-      field: 'Logo'
-    },
-    isActive: {
+    ativa: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true,
-      field: 'IsActive'
+      field: 'ativa'
     },
-    apiKey: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      field: 'ApiKey'
-    },
-    registrationDate: {
+    dataCadastro: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
-      field: 'RegistrationDate'
+      field: 'data_cadastro'
+    },
+    // Campos para configuração da IA
+    aiProvider: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      field: 'ai_provider',
+      defaultValue: 'openai',
+      validate: {
+        isIn: [['openai', 'anthropic', 'google']]
+      }
+    },
+    aiApiKey: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      field: 'ai_api_key'
+    },
+    aiModel: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      field: 'ai_model',
+      defaultValue: 'gpt-3.5-turbo'
     },
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
-      field: 'CreatedAt'
+      field: 'createdAt'
     },
     updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
-      field: 'UpdatedAt'
+      field: 'updatedAt'
     }
   }, {
-    tableName: 'Companies',
+    tableName: 'empresas',
     timestamps: true,
-    createdAt: 'CreatedAt',
-    updatedAt: 'UpdatedAt'
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   });
 
   return Company;

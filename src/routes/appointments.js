@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { apiKeyAuth } = require('../middleware/auth');
-const Appointment = require('../models/Appointment');
+const agendamentoController = require('../controllers/agendamentoController');
 
 /**
  * @swagger
@@ -10,29 +10,44 @@ const Appointment = require('../models/Appointment');
  *     Appointment:
  *       type: object
  *       required:
- *         - CustomerId
- *         - AttendantId
- *         - AppointmentDate
+ *         - customerId
+ *         - attendantId
+ *         - date
  *       properties:
- *         Id:
+ *         id:
  *           type: string
  *           format: uuid
  *           description: ID único do agendamento
- *         CustomerId:
+ *         customerId:
  *           type: string
  *           format: uuid
  *           description: ID do cliente
- *         AttendantId:
+ *         companyId:
+ *           type: string
+ *           format: uuid
+ *           description: ID da empresa
+ *         attendantId:
  *           type: string
  *           format: uuid
  *           description: ID do atendente
- *         AppointmentDate:
+ *         date:
  *           type: string
  *           format: date-time
  *           description: Data e hora do agendamento
- *         IsServiceDone:
+ *         isServiceDone:
  *           type: boolean
  *           description: Indica se o serviço foi realizado
+ *         observations:
+ *           type: string
+ *           description: Observações sobre o agendamento
+ *         status:
+ *           type: string
+ *           enum: [agendado, confirmado, cancelado, realizado]
+ *           description: Status do agendamento
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Data de cadastro do agendamento
  */
 
 /**
@@ -51,19 +66,10 @@ const Appointment = require('../models/Appointment');
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Appointment'
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.get('/', apiKeyAuth, async (req, res) => {
-  try {
-    const appointments = await Appointment.findAll({
-      where: {
-        CompanyId: req.company.Id
-      }
-    });
-    res.json(appointments);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.get('/', apiKeyAuth, agendamentoController.getAllAgendamentos);
 
 /**
  * @swagger
@@ -78,30 +84,20 @@ router.get('/', apiKeyAuth, async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID do agendamento
  *     responses:
  *       200:
- *         description: Agendamento encontrado
+ *         description: Detalhes do agendamento
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Appointment'
+ *       404:
+ *         description: Agendamento não encontrado
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.get('/:id', apiKeyAuth, async (req, res) => {
-  try {
-    const appointment = await Appointment.findOne({
-      where: {
-        Id: req.params.id,
-        CompanyId: req.company.Id
-      }
-    });
-    if (!appointment) {
-      return res.status(404).json({ error: 'Agendamento não encontrado' });
-    }
-    res.json(appointment);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.get('/:id', apiKeyAuth, agendamentoController.getAgendamentoById);
 
 /**
  * @swagger
@@ -115,29 +111,47 @@ router.get('/:id', apiKeyAuth, async (req, res) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Appointment'
+ *             type: object
+ *             required:
+ *               - customerId
+ *               - attendantId
+ *               - date
+ *             properties:
+ *               customerId:
+ *                 type: string
+ *                 format: uuid
+ *               attendantId:
+ *                 type: string
+ *                 format: uuid
+ *               date:
+ *                 type: string
+ *                 format: date-time
+ *               observations:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *                 enum: [agendado, confirmado, cancelado, realizado]
  *     responses:
  *       201:
  *         description: Agendamento criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Appointment'
+ *       400:
+ *         description: Dados inválidos ou horário já agendado
+ *       404:
+ *         description: Cliente, atendente ou horário não encontrado
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.post('/', apiKeyAuth, async (req, res) => {
-  try {
-    const appointmentData = {
-      ...req.body,
-      CompanyId: req.company.Id
-    };
-    const appointment = await Appointment.create(appointmentData);
-    res.status(201).json(appointment);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
+router.post('/', apiKeyAuth, agendamentoController.createAgendamento);
 
 /**
  * @swagger
  * /api/appointments/{id}:
  *   put:
- *     summary: Atualiza um agendamento
+ *     summary: Atualiza um agendamento existente
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
@@ -146,32 +160,45 @@ router.post('/', apiKeyAuth, async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID do agendamento
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Appointment'
+ *             type: object
+ *             properties:
+ *               customerId:
+ *                 type: string
+ *                 format: uuid
+ *               attendantId:
+ *                 type: string
+ *                 format: uuid
+ *               date:
+ *                 type: string
+ *                 format: date-time
+ *               isServiceDone:
+ *                 type: boolean
+ *               observations:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *                 enum: [agendado, confirmado, cancelado, realizado]
+ *     responses:
+ *       200:
+ *         description: Agendamento atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Appointment'
+ *       400:
+ *         description: Dados inválidos ou horário já agendado
+ *       404:
+ *         description: Agendamento, cliente, atendente ou horário não encontrado
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.put('/:id', apiKeyAuth, async (req, res) => {
-  try {
-    const appointment = await Appointment.findOne({
-      where: {
-        Id: req.params.id,
-        CompanyId: req.company.Id
-      }
-    });
-    
-    if (!appointment) {
-      return res.status(404).json({ error: 'Agendamento não encontrado' });
-    }
-
-    const updatedAppointment = await appointment.update(req.body);
-    res.json(updatedAppointment);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
+router.put('/:id', apiKeyAuth, agendamentoController.updateAgendamento);
 
 /**
  * @swagger
@@ -186,25 +213,15 @@ router.put('/:id', apiKeyAuth, async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID do agendamento
+ *     responses:
+ *       204:
+ *         description: Agendamento removido com sucesso
+ *       404:
+ *         description: Agendamento não encontrado
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.delete('/:id', apiKeyAuth, async (req, res) => {
-  try {
-    const appointment = await Appointment.findOne({
-      where: {
-        Id: req.params.id,
-        CompanyId: req.company.Id
-      }
-    });
-    
-    if (!appointment) {
-      return res.status(404).json({ error: 'Agendamento não encontrado' });
-    }
-
-    await appointment.destroy();
-    res.status(204).send();
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.delete('/:id', apiKeyAuth, agendamentoController.deleteAgendamento);
 
 module.exports = router;

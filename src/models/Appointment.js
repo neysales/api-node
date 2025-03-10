@@ -4,49 +4,73 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
-      field: 'Id'
+      field: 'id'
     },
     customerId: {
       type: DataTypes.UUID,
       allowNull: false,
-      field: 'CustomerId',
+      field: 'cliente_id',
       references: {
-        model: 'Customers',
-        key: 'Id'
+        model: 'clientes',
+        key: 'id'
       }
     },
     companyId: {
       type: DataTypes.UUID,
       allowNull: false,
-      field: 'CompanyId',
+      field: 'empresa_id',
       references: {
-        model: 'Companies',
-        key: 'Id'
+        model: 'empresas',
+        key: 'id'
       }
     },
     attendantId: {
       type: DataTypes.UUID,
       allowNull: false,
-      field: 'AttendantId',
+      field: 'atendente_id',
       references: {
-        model: 'Attendants',
-        key: 'Id'
+        model: 'atendentes',
+        key: 'id'
       }
     },
     date: {
       type: DataTypes.DATE,
       allowNull: false,
-      field: 'AppointmentDate'
+      field: 'data_agendamento'
     },
     isServiceDone: {
-      type: DataTypes.STRING,
+      type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: 'pending',
-      field: 'IsServiceDone'
+      defaultValue: false,
+      field: 'servico_realizado'
+    },
+    observations: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      field: 'observacoes'
+    },
+    status: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      defaultValue: 'agendado',
+      field: 'status'
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+      field: 'data_cadastro'
     }
   }, {
-    tableName: 'Appointments'
+    tableName: 'agendamentos',
+    timestamps: false
   });
+
+  Appointment.associate = function(models) {
+    Appointment.belongsTo(models.Customer, { foreignKey: 'cliente_id', as: 'cliente' });
+    Appointment.belongsTo(models.Company, { foreignKey: 'empresa_id', as: 'empresa' });
+    Appointment.belongsTo(models.Attendant, { foreignKey: 'atendente_id', as: 'atendente' });
+  };
 
   return Appointment;
 };

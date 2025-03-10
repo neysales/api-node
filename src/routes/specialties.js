@@ -1,8 +1,40 @@
 const express = require('express');
 const router = express.Router();
-const { Specialty } = require('../models');
 const { apiKeyAuth } = require('../middleware/auth');
-const { v4: uuidv4 } = require('uuid');
+const especialidadeController = require('../controllers/especialidadeController');
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Specialty:
+ *       type: object
+ *       required:
+ *         - name
+ *         - description
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *           description: ID único da especialidade
+ *         name:
+ *           type: string
+ *           description: Nome da especialidade
+ *         description:
+ *           type: string
+ *           description: Descrição da especialidade
+ *         companyId:
+ *           type: string
+ *           format: uuid
+ *           description: ID da empresa
+ *         isActive:
+ *           type: boolean
+ *           description: Indica se a especialidade está ativa
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Data de cadastro da especialidade
+ */
 
 /**
  * @swagger
@@ -10,29 +42,24 @@ const { v4: uuidv4 } = require('uuid');
  *   get:
  *     tags:
  *       - Specialties
- *     summary: List all specialties for the authenticated company
+ *     summary: Lista todas as especialidades da empresa autenticada
  *     security:
  *       - ApiKeyAuth: []
  *     responses:
  *       200:
- *         description: List of specialties
+ *         description: Lista de especialidades
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Specialty'
  *       401:
- *         description: Unauthorized
+ *         description: Não autorizado
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.get('/', apiKeyAuth, async (req, res) => {
-  try {
-    const specialties = await Specialty.findAll({
-      where: {
-        companyId: req.company.id,
-        isActive: true
-      }
-    });
-    res.json(specialties);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+router.get('/', apiKeyAuth, especialidadeController.getAllEspecialidades);
 
 /**
  * @swagger
@@ -40,7 +67,7 @@ router.get('/', apiKeyAuth, async (req, res) => {
  *   get:
  *     tags:
  *       - Specialties
- *     summary: Get a specific specialty by ID
+ *     summary: Obtém uma especialidade específica pelo ID
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
@@ -49,35 +76,22 @@ router.get('/', apiKeyAuth, async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
- *         description: Specialty ID
+ *         description: ID da especialidade
  *     responses:
  *       200:
- *         description: Specialty details
+ *         description: Detalhes da especialidade
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Specialty'
  *       401:
- *         description: Unauthorized
+ *         description: Não autorizado
  *       404:
- *         description: Specialty not found
+ *         description: Especialidade não encontrada
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.get('/:id', apiKeyAuth, async (req, res) => {
-  try {
-    const specialty = await Specialty.findOne({
-      where: {
-        id: req.params.id,
-        companyId: req.company.id,
-        isActive: true
-      }
-    });
-    
-    if (!specialty) {
-      return res.status(404).json({ error: 'Specialty not found' });
-    }
-    
-    res.json(specialty);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+router.get('/:id', apiKeyAuth, especialidadeController.getEspecialidadeById);
 
 /**
  * @swagger
@@ -85,7 +99,7 @@ router.get('/:id', apiKeyAuth, async (req, res) => {
  *   post:
  *     tags:
  *       - Specialties
- *     summary: Create a new specialty
+ *     summary: Cria uma nova especialidade
  *     security:
  *       - ApiKeyAuth: []
  *     requestBody:
@@ -100,29 +114,28 @@ router.get('/:id', apiKeyAuth, async (req, res) => {
  *             properties:
  *               name:
  *                 type: string
+ *                 description: Nome da especialidade
  *               description:
  *                 type: string
+ *                 description: Descrição da especialidade
+ *               isActive:
+ *                 type: boolean
+ *                 description: Indica se a especialidade está ativa
  *     responses:
  *       201:
- *         description: Specialty created successfully
+ *         description: Especialidade criada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Specialty'
+ *       400:
+ *         description: Dados inválidos
  *       401:
- *         description: Unauthorized
+ *         description: Não autorizado
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.post('/', apiKeyAuth, async (req, res) => {
-  try {
-    const specialty = await Specialty.create({
-      id: uuidv4(),
-      name: req.body.name,
-      description: req.body.description,
-      companyId: req.company.id
-    });
-    
-    res.status(201).json(specialty);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+router.post('/', apiKeyAuth, especialidadeController.createEspecialidade);
 
 /**
  * @swagger
@@ -130,7 +143,7 @@ router.post('/', apiKeyAuth, async (req, res) => {
  *   put:
  *     tags:
  *       - Specialties
- *     summary: Update a specialty
+ *     summary: Atualiza uma especialidade existente
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
@@ -139,7 +152,7 @@ router.post('/', apiKeyAuth, async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
- *         description: Specialty ID
+ *         description: ID da especialidade
  *     requestBody:
  *       required: true
  *       content:
@@ -149,41 +162,30 @@ router.post('/', apiKeyAuth, async (req, res) => {
  *             properties:
  *               name:
  *                 type: string
+ *                 description: Nome da especialidade
  *               description:
  *                 type: string
+ *                 description: Descrição da especialidade
+ *               isActive:
+ *                 type: boolean
+ *                 description: Indica se a especialidade está ativa
  *     responses:
  *       200:
- *         description: Specialty updated successfully
+ *         description: Especialidade atualizada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Specialty'
+ *       400:
+ *         description: Dados inválidos
  *       401:
- *         description: Unauthorized
+ *         description: Não autorizado
  *       404:
- *         description: Specialty not found
+ *         description: Especialidade não encontrada
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.put('/:id', apiKeyAuth, async (req, res) => {
-  try {
-    const specialty = await Specialty.findOne({
-      where: {
-        id: req.params.id,
-        companyId: req.company.id,
-        isActive: true
-      }
-    });
-    
-    if (!specialty) {
-      return res.status(404).json({ error: 'Specialty not found' });
-    }
-    
-    await specialty.update({
-      name: req.body.name || specialty.name,
-      description: req.body.description || specialty.description
-    });
-    
-    res.json(specialty);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+router.put('/:id', apiKeyAuth, especialidadeController.updateEspecialidade);
 
 /**
  * @swagger
@@ -191,7 +193,7 @@ router.put('/:id', apiKeyAuth, async (req, res) => {
  *   delete:
  *     tags:
  *       - Specialties
- *     summary: Delete a specialty (soft delete)
+ *     summary: Remove uma especialidade
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
@@ -200,36 +202,17 @@ router.put('/:id', apiKeyAuth, async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
- *         description: Specialty ID
+ *         description: ID da especialidade
  *     responses:
- *       200:
- *         description: Specialty deleted successfully
+ *       204:
+ *         description: Especialidade removida com sucesso
  *       401:
- *         description: Unauthorized
+ *         description: Não autorizado
  *       404:
- *         description: Specialty not found
+ *         description: Especialidade não encontrada
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.delete('/:id', apiKeyAuth, async (req, res) => {
-  try {
-    const specialty = await Specialty.findOne({
-      where: {
-        id: req.params.id,
-        companyId: req.company.id,
-        isActive: true
-      }
-    });
-    
-    if (!specialty) {
-      return res.status(404).json({ error: 'Specialty not found' });
-    }
-    
-    await specialty.update({ isActive: false });
-    
-    res.json({ message: 'Specialty deleted successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+router.delete('/:id', apiKeyAuth, especialidadeController.deleteEspecialidade);
 
 module.exports = router;

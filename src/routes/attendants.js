@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { apiKeyAuth } = require('../middleware/auth');
-const { Attendant } = require('../models');
+const atendenteController = require('../controllers/atendenteController');
 
 /**
  * @swagger
@@ -12,33 +12,38 @@ const { Attendant } = require('../models');
  *       required:
  *         - name
  *         - specialtyId
- *         - mobileNumber
+ *         - phone
  *         - email
- *         - hiringDate
  *       properties:
  *         id:
  *           type: string
  *           format: uuid
+ *           description: ID único do atendente
  *         name:
  *           type: string
+ *           description: Nome do atendente
  *         specialtyId:
  *           type: string
  *           format: uuid
+ *           description: ID da especialidade do atendente
  *         companyId:
  *           type: string
  *           format: uuid
- *         mobileNumber:
+ *           description: ID da empresa
+ *         phone:
  *           type: string
+ *           description: Número de telefone celular do atendente
  *         email:
  *           type: string
  *           format: email
- *         hiringDate:
- *           type: string
- *           format: date-time
- *         isAdmin:
- *           type: boolean
+ *           description: E-mail do atendente
  *         isActive:
  *           type: boolean
+ *           description: Indica se o atendente está ativo
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Data de cadastro do atendente
  */
 
 // Todas as rotas requerem autenticação
@@ -60,20 +65,10 @@ router.use(apiKeyAuth);
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Attendant'
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.get('/', async (req, res) => {
-  try {
-    const attendants = await Attendant.findAll({
-      where: {
-        companyId: req.company.id
-      }
-    });
-    res.json(attendants);
-  } catch (error) {
-    console.error('Erro ao listar atendentes:', error);
-    res.status(500).json({ error: 'Erro ao listar atendentes' });
-  }
-});
+router.get('/', atendenteController.getAllAtendentes);
 
 /**
  * @swagger
@@ -88,30 +83,20 @@ router.get('/', async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID do atendente
  *     responses:
  *       200:
- *         description: Atendente encontrado
+ *         description: Detalhes do atendente
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Attendant'
+ *       404:
+ *         description: Atendente não encontrado
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.get('/:id', async (req, res) => {
-  try {
-    const attendant = await Attendant.findOne({
-      where: {
-        id: req.params.id,
-        companyId: req.company.id
-      }
-    });
-    if (!attendant) {
-      return res.status(404).json({ error: 'Atendente não encontrado' });
-    }
-    res.json(attendant);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.get('/:id', atendenteController.getAtendenteById);
 
 /**
  * @swagger
@@ -125,29 +110,46 @@ router.get('/:id', async (req, res) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Attendant'
+ *             type: object
+ *             required:
+ *               - name
+ *               - specialtyId
+ *               - phone
+ *               - email
+ *             properties:
+ *               name:
+ *                 type: string
+ *               specialtyId:
+ *                 type: string
+ *                 format: uuid
+ *               phone:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               isActive:
+ *                 type: boolean
  *     responses:
  *       201:
  *         description: Atendente criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Attendant'
+ *       400:
+ *         description: Dados inválidos
+ *       404:
+ *         description: Especialidade não encontrada
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.post('/', async (req, res) => {
-  try {
-    const attendantData = {
-      ...req.body,
-      companyId: req.company.id
-    };
-    const attendant = await Attendant.create(attendantData);
-    res.status(201).json(attendant);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
+router.post('/', atendenteController.createAtendente);
 
 /**
  * @swagger
  * /api/attendants/{id}:
  *   put:
- *     summary: Atualiza um atendente
+ *     summary: Atualiza um atendente existente
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
@@ -156,32 +158,41 @@ router.post('/', async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID do atendente
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Attendant'
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               specialtyId:
+ *                 type: string
+ *                 format: uuid
+ *               phone:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               isActive:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Atendente atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Attendant'
+ *       400:
+ *         description: Dados inválidos
+ *       404:
+ *         description: Atendente ou especialidade não encontrado
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.put('/:id', async (req, res) => {
-  try {
-    const attendant = await Attendant.findOne({
-      where: {
-        id: req.params.id,
-        companyId: req.company.id
-      }
-    });
-    
-    if (!attendant) {
-      return res.status(404).json({ error: 'Atendente não encontrado' });
-    }
-
-    const updatedAttendant = await attendant.update(req.body);
-    res.json(updatedAttendant);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
+router.put('/:id', atendenteController.updateAtendente);
 
 /**
  * @swagger
@@ -196,25 +207,15 @@ router.put('/:id', async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID do atendente
+ *     responses:
+ *       204:
+ *         description: Atendente removido com sucesso
+ *       404:
+ *         description: Atendente não encontrado
+ *       500:
+ *         description: Erro interno do servidor
  */
-router.delete('/:id', async (req, res) => {
-  try {
-    const attendant = await Attendant.findOne({
-      where: {
-        id: req.params.id,
-        companyId: req.company.id
-      }
-    });
-    
-    if (!attendant) {
-      return res.status(404).json({ error: 'Atendente não encontrado' });
-    }
-
-    await attendant.destroy();
-    res.status(204).send();
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.delete('/:id', atendenteController.deleteAtendente);
 
 module.exports = router;
