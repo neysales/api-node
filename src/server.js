@@ -21,6 +21,7 @@ const horarioRoutes = require('./routes/schedules');
 const configRoutes = require('./routes/configRoutes');
 const aiAgendamentoRoutes = require('./routes/aiAgendamentoRoutes');
 const companyCheckRoutes = require('./routes/company-check');
+const aiConfigRoutes = require('./routes/aiConfigRoutes');
 
 // Importar adaptadores de rotas
 const empresaAdaptador = require('./routes/adaptadores/empresas');
@@ -115,6 +116,7 @@ app.use('/api/especialidades', apiKeyAuth, isolamentoDados, especialidadeRoutes)
 app.use('/api/horarios', apiKeyAuth, isolamentoDados, horarioRoutes);
 app.use('/api/config', apiKeyAuth, isolamentoDados, configRoutes);
 app.use('/api/ai-agendamento', apiKeyAuth, isolamentoDados, aiAgendamentoRoutes);
+app.use('/api/ai-config', apiKeyAuth, isolamentoDados, aiConfigRoutes);
 
 // Rota de teste para verificar se a API está funcionando
 app.get('/api/health', (req, res) => {

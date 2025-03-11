@@ -12,7 +12,11 @@ router.use(apiKeyAuth);
 router.get('/', async (req, res) => {
   try {
     const [clientes] = await sequelize.query(
-      `SELECT * FROM clientes WHERE empresa_id = ${req.company.id}`
+      `SELECT * FROM clientes WHERE empresa_id = :empresaId`,
+      {
+        replacements: { empresaId: req.company.id },
+        type: sequelize.QueryTypes.SELECT
+      }
     );
     res.json(clientes);
   } catch (error) {
@@ -27,7 +31,14 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const [clientes] = await sequelize.query(
-      `SELECT * FROM clientes WHERE id = ${req.params.id} AND empresa_id = ${req.company.id}`
+      `SELECT * FROM clientes WHERE id = :id AND empresa_id = :empresaId`,
+      {
+        replacements: { 
+          id: req.params.id,
+          empresaId: req.company.id 
+        },
+        type: sequelize.QueryTypes.SELECT
+      }
     );
     
     if (clientes.length === 0) {
@@ -61,16 +72,24 @@ router.post('/', async (req, res) => {
         "createdAt",
         "updatedAt"
       ) VALUES (
-        '${req.body.nome}', 
-        '${req.body.telefone || ''}', 
-        '${req.body.email || ''}', 
-        ${req.company.id}, 
+        :nome, 
+        :telefone, 
+        :email, 
+        :empresaId, 
         NOW(),
         NOW()
       ) RETURNING *;
     `;
 
-    const [resultado] = await sequelize.query(query);
+    const [resultado] = await sequelize.query(query, {
+      replacements: {
+        nome: req.body.nome,
+        telefone: req.body.telefone || '',
+        email: req.body.email || '',
+        empresaId: req.company.id
+      },
+      type: sequelize.QueryTypes.INSERT
+    });
     
     if (resultado.length === 0) {
       return res.status(500).json({ error: 'Erro ao criar cliente' });
@@ -90,7 +109,14 @@ router.put('/:id', async (req, res) => {
   try {
     // Verificar se o cliente existe
     const [clientes] = await sequelize.query(
-      `SELECT * FROM clientes WHERE id = ${req.params.id} AND empresa_id = ${req.company.id}`
+      `SELECT * FROM clientes WHERE id = :id AND empresa_id = :empresaId`,
+      {
+        replacements: { 
+          id: req.params.id,
+          empresaId: req.company.id 
+        },
+        type: sequelize.QueryTypes.SELECT
+      }
     );
     
     if (clientes.length === 0) {
@@ -100,13 +126,22 @@ router.put('/:id', async (req, res) => {
     // Atualizar cliente
     const [resultado] = await sequelize.query(`
       UPDATE clientes SET
-        nome = '${req.body.nome || clientes[0].nome}',
-        telefone = '${req.body.telefone || clientes[0].telefone}',
-        email = '${req.body.email || clientes[0].email || ''}',
+        nome = :nome,
+        telefone = :telefone,
+        email = :email,
         "updatedAt" = NOW()
-      WHERE id = ${req.params.id} AND empresa_id = ${req.company.id}
+      WHERE id = :id AND empresa_id = :empresaId
       RETURNING *;
-    `);
+    `, {
+      replacements: {
+        nome: req.body.nome || clientes[0].nome,
+        telefone: req.body.telefone || clientes[0].telefone,
+        email: req.body.email || clientes[0].email || '',
+        id: req.params.id,
+        empresaId: req.company.id
+      },
+      type: sequelize.QueryTypes.UPDATE
+    });
     
     res.json(resultado[0]);
   } catch (error) {
@@ -122,7 +157,14 @@ router.delete('/:id', async (req, res) => {
   try {
     // Verificar se o cliente existe
     const [clientes] = await sequelize.query(
-      `SELECT * FROM clientes WHERE id = ${req.params.id} AND empresa_id = ${req.company.id}`
+      `SELECT * FROM clientes WHERE id = :id AND empresa_id = :empresaId`,
+      {
+        replacements: { 
+          id: req.params.id,
+          empresaId: req.company.id 
+        },
+        type: sequelize.QueryTypes.SELECT
+      }
     );
     
     if (clientes.length === 0) {
@@ -133,8 +175,14 @@ router.delete('/:id', async (req, res) => {
     await sequelize.query(`
       UPDATE clientes SET
         "updatedAt" = NOW()
-      WHERE id = ${req.params.id} AND empresa_id = ${req.company.id}
-    `);
+      WHERE id = :id AND empresa_id = :empresaId
+    `, {
+      replacements: {
+        id: req.params.id,
+        empresaId: req.company.id
+      },
+      type: sequelize.QueryTypes.UPDATE
+    });
     
     res.status(204).send();
   } catch (error) {

@@ -1,6 +1,19 @@
 const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
-const pool = new Pool();
+const dbConfig = require('../config/database');
+
+// Obter configurações do ambiente atual
+const env = process.env.NODE_ENV || 'development';
+const config = dbConfig[env];
+
+// Criar pool de conexão com as configurações corretas
+const pool = new Pool({
+    host: config.host,
+    database: config.database,
+    user: config.username,
+    password: config.password,
+    port: config.port
+});
 
 class Config {
     static async getAll() {
@@ -29,8 +42,10 @@ class Config {
                 minio_bucket, minio_port, minio_access_key, minio_secret_key,
                 minio_endpoint, email, email_senha, email_smtp, email_porta,
                 email_texto_agendado, email_texto_cancelado,
-                email_texto_confirmado, email_texto_recusado, data_cadastro
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, CURRENT_TIMESTAMP)
+                email_texto_confirmado, email_texto_recusado, 
+                ai_provider, ai_api_key, ai_model,
+                data_cadastro
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, CURRENT_TIMESTAMP)
             RETURNING *
         `;
         
@@ -53,7 +68,10 @@ class Config {
             configData.email_texto_agendado,
             configData.email_texto_cancelado,
             configData.email_texto_confirmado,
-            configData.email_texto_recusado
+            configData.email_texto_recusado,
+            configData.ai_provider || 'openai',
+            configData.ai_api_key,
+            configData.ai_model || 'gpt-3.5-turbo'
         ];
 
         const { rows } = await pool.query(query, values);
@@ -79,8 +97,11 @@ class Config {
                 email_texto_agendado = $14,
                 email_texto_cancelado = $15,
                 email_texto_confirmado = $16,
-                email_texto_recusado = $17
-            WHERE id = $18
+                email_texto_recusado = $17,
+                ai_provider = $18,
+                ai_api_key = $19,
+                ai_model = $20
+            WHERE id = $21
             RETURNING *
         `;
 
@@ -102,6 +123,9 @@ class Config {
             configData.email_texto_cancelado,
             configData.email_texto_confirmado,
             configData.email_texto_recusado,
+            configData.ai_provider,
+            configData.ai_api_key,
+            configData.ai_model,
             id
         ];
 

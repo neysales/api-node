@@ -42,6 +42,9 @@ CREATE TABLE IF NOT EXISTS public.config(
     email_texto_cancelado TEXT COLLATE pg_catalog."default",
     email_texto_confirmado TEXT COLLATE pg_catalog."default",
     email_texto_recusado TEXT COLLATE pg_catalog."default",
+    ai_provider TEXT COLLATE pg_catalog."default" DEFAULT 'openai',
+    ai_api_key TEXT COLLATE pg_catalog."default",
+    ai_model TEXT COLLATE pg_catalog."default" DEFAULT 'gpt-3.5-turbo',
     data_cadastro TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT pk_config PRIMARY KEY (id),
     CONSTRAINT fk_config_empresa FOREIGN KEY (empresa_id)

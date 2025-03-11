@@ -5,6 +5,7 @@ class AIAgendamentoController {
     async processarSolicitacao(req, res) {
         try {
             const { mensagem } = req.body;
+            const apiKey = req.headers['x-api-key'];
             
             if (!mensagem) {
                 return res.status(400).json({
@@ -14,7 +15,7 @@ class AIAgendamentoController {
             }
 
             // Processa a mensagem com a IA
-            const resultadoIA = await aiService.processarSolicitacao(mensagem);
+            const resultadoIA = await aiService.processarSolicitacao(mensagem, apiKey);
             let dados;
 
             try {
@@ -33,7 +34,7 @@ class AIAgendamentoController {
             }
 
             // Processa a ação baseado no resultado da IA
-            const resultado = await this.executarAcao(dados, req.headers['x-api-key']);
+            const resultado = await this.executarAcao(dados, apiKey);
 
             return res.json(resultado);
         } catch (error) {
