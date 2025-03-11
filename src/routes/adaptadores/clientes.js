@@ -12,7 +12,9 @@ router.use(apiKeyAuth);
 router.get('/', async (req, res) => {
   try {
     const [clientes] = await sequelize.query(
-      `SELECT * FROM clientes WHERE empresa_id = :empresaId`,
+      `SELECT c.* FROM clientes c
+       INNER JOIN clientes_empresas ce ON c.id = ce.cliente_id
+       WHERE ce.empresa_id = :empresaId`,
       {
         replacements: { empresaId: req.company.id },
         type: sequelize.QueryTypes.SELECT
@@ -31,7 +33,9 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const [clientes] = await sequelize.query(
-      `SELECT * FROM clientes WHERE id = :id AND empresa_id = :empresaId`,
+      `SELECT c.* FROM clientes c
+       INNER JOIN clientes_empresas ce ON c.id = ce.cliente_id
+       WHERE c.id = :id AND ce.empresa_id = :empresaId`,
       {
         replacements: { 
           id: req.params.id,
@@ -62,22 +66,23 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Nome não pode ser vazio' });
     }
 
-    // Inserir cliente
     const query = `
       INSERT INTO clientes (
+        id,
         nome, 
         telefone_celular, 
         email, 
-        empresa_id, 
-        "createdAt",
-        "updatedAt"
+        data_cadastro,
+        senha,
+        ativo
       ) VALUES (
+        uuid_generate_v4(),
         :nome, 
         :telefone, 
         :email, 
-        :empresaId, 
         NOW(),
-        NOW()
+        :senha,
+        true
       ) RETURNING *;
     `;
 
@@ -86,7 +91,7 @@ router.post('/', async (req, res) => {
         nome: req.body.nome,
         telefone: req.body.telefone || '',
         email: req.body.email || '',
-        empresaId: req.company.id
+        senha: req.body.senha || '123456' // senha padrão
       },
       type: sequelize.QueryTypes.INSERT
     });
@@ -94,6 +99,23 @@ router.post('/', async (req, res) => {
     if (resultado.length === 0) {
       return res.status(500).json({ error: 'Erro ao criar cliente' });
     }
+    
+    // Inserir relacionamento cliente-empresa
+    await sequelize.query(`
+      INSERT INTO clientes_empresas (
+        cliente_id, 
+        empresa_id
+      ) VALUES (
+        :clienteId, 
+        :empresaId
+      );
+    `, {
+      replacements: {
+        clienteId: resultado[0].id,
+        empresaId: req.company.id
+      },
+      type: sequelize.QueryTypes.INSERT
+    });
     
     res.status(201).json(resultado[0]);
   } catch (error) {
@@ -109,7 +131,9 @@ router.put('/:id', async (req, res) => {
   try {
     // Verificar se o cliente existe
     const [clientes] = await sequelize.query(
-      `SELECT * FROM clientes WHERE id = :id AND empresa_id = :empresaId`,
+      `SELECT c.* FROM clientes c
+       INNER JOIN clientes_empresas ce ON c.id = ce.cliente_id
+       WHERE c.id = :id AND ce.empresa_id = :empresaId`,
       {
         replacements: { 
           id: req.params.id,
@@ -127,18 +151,16 @@ router.put('/:id', async (req, res) => {
     const [resultado] = await sequelize.query(`
       UPDATE clientes SET
         nome = :nome,
-        telefone = :telefone,
-        email = :email,
-        "updatedAt" = NOW()
-      WHERE id = :id AND empresa_id = :empresaId
+        telefone_celular = :telefone,
+        email = :email
+      WHERE id = :id
       RETURNING *;
     `, {
       replacements: {
         nome: req.body.nome || clientes[0].nome,
-        telefone: req.body.telefone || clientes[0].telefone,
+        telefone: req.body.telefone || clientes[0].telefone_celular,
         email: req.body.email || clientes[0].email || '',
-        id: req.params.id,
-        empresaId: req.company.id
+        id: req.params.id
       },
       type: sequelize.QueryTypes.UPDATE
     });
@@ -157,7 +179,9 @@ router.delete('/:id', async (req, res) => {
   try {
     // Verificar se o cliente existe
     const [clientes] = await sequelize.query(
-      `SELECT * FROM clientes WHERE id = :id AND empresa_id = :empresaId`,
+      `SELECT c.* FROM clientes c
+       INNER JOIN clientes_empresas ce ON c.id = ce.cliente_id
+       WHERE c.id = :id AND ce.empresa_id = :empresaId`,
       {
         replacements: { 
           id: req.params.id,
@@ -174,14 +198,25 @@ router.delete('/:id', async (req, res) => {
     // Desativar cliente (exclusão lógica)
     await sequelize.query(`
       UPDATE clientes SET
-        "updatedAt" = NOW()
-      WHERE id = :id AND empresa_id = :empresaId
+        data_atualizacao = NOW()
+      WHERE id = :id
     `, {
       replacements: {
-        id: req.params.id,
-        empresaId: req.company.id
+        id: req.params.id
       },
       type: sequelize.QueryTypes.UPDATE
+    });
+    
+    // Excluir relacionamento cliente-empresa
+    await sequelize.query(`
+      DELETE FROM clientes_empresas
+      WHERE cliente_id = :clienteId AND empresa_id = :empresaId;
+    `, {
+      replacements: {
+        clienteId: req.params.id,
+        empresaId: req.company.id
+      },
+      type: sequelize.QueryTypes.DELETE
     });
     
     res.status(204).send();
