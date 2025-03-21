@@ -1,15 +1,66 @@
 const express = require('express');
 const router = express.Router();
-const authMiddleware = require('../middleware/auth');
-const atendenteController = require('../controllers/atendenteController');
+const attendantController = require('../controllers/atendenteController');
+const { apiKeyAuth } = require('../middleware/auth');
+const { isolamentoDados } = require('../middleware/isolamento');
 
-// Por enquanto, vamos criar rotas básicas que retornam 501 (Not Implemented)
-router.use(authMiddleware);
+// Apply middlewares
+router.use(apiKeyAuth);
+router.use(isolamentoDados);
 
-router.get('/', atendenteController.getAllAtendentes);
-router.get('/:id', atendenteController.getAtendenteById);
-router.post('/', atendenteController.createAtendente);
-router.put('/:id', atendenteController.updateAtendente);
-router.delete('/:id', atendenteController.deleteAtendente);
+/**
+ * @swagger
+ * /api/attendants:
+ *   get:
+ *     summary: Get all attendants
+ *     tags: [Attendants]
+ *     security:
+ *       - ApiKeyAuth: []
+ */
+router.get('/', attendantController.getAllAtendentes);
+
+/**
+ * @swagger
+ * /api/attendants/{id}:
+ *   get:
+ *     summary: Get attendant by ID
+ *     tags: [Attendants]
+ *     security:
+ *       - ApiKeyAuth: []
+ */
+router.get('/:id', attendantController.getAtendenteById);
+
+/**
+ * @swagger
+ * /api/attendants:
+ *   post:
+ *     summary: Create new attendant
+ *     tags: [Attendants]
+ *     security:
+ *       - ApiKeyAuth: []
+ */
+router.post('/', attendantController.createAtendente);
+
+/**
+ * @swagger
+ * /api/attendants/{id}:
+ *   put:
+ *     summary: Update attendant
+ *     tags: [Attendants]
+ *     security:
+ *       - ApiKeyAuth: []
+ */
+router.put('/:id', attendantController.updateAtendente);
+
+/**
+ * @swagger
+ * /api/attendants/{id}:
+ *   delete:
+ *     summary: Delete attendant
+ *     tags: [Attendants]
+ *     security:
+ *       - ApiKeyAuth: []
+ */
+router.delete('/:id', attendantController.deleteAtendente);
 
 module.exports = router;

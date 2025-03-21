@@ -1,171 +1,155 @@
 const express = require('express');
 const router = express.Router();
-const { sequelize } = require('../../models');
+const { Company } = require('../../models');
+const crypto = require('crypto');
 
 /**
- * Rota para listar todas as empresas
+ * @swagger
+ * /api/adapters/companies:
+ *   get:
+ *     summary: List all companies
+ *     tags: [Legacy Adapters]
  */
 router.get('/', async (req, res) => {
   try {
-    const [empresas] = await sequelize.query(
-      `SELECT * FROM empresas WHERE ativa = true`
-    );
-    res.json(empresas);
+    const companies = await Company.findAll({
+      where: { active: true }
+    });
+    res.json(companies);
   } catch (error) {
-    console.error('Erro ao listar empresas:', error);
-    res.status(500).json({ error: 'Erro ao listar empresas: ' + error.message });
+    console.error('Error listing companies:', error);
+    res.status(500).json({ error: 'Error listing companies: ' + error.message });
   }
 });
 
 /**
- * Rota para obter uma empresa pelo ID
+ * @swagger
+ * /api/adapters/companies/{id}:
+ *   get:
+ *     summary: Get company by ID
  */
 router.get('/:id', async (req, res) => {
   try {
-    const [empresas] = await sequelize.query(
-      `SELECT * FROM empresas WHERE id = ${req.params.id} AND ativa = true`
-    );
+    const company = await Company.findOne({
+      where: { 
+        id: req.params.id,
+        active: true
+      }
+    });
     
-    if (empresas.length === 0) {
-      return res.status(404).json({ error: 'Empresa não encontrada' });
+    if (!company) {
+      return res.status(404).json({ error: 'Company not found' });
     }
     
-    res.json(empresas[0]);
+    res.json(company);
   } catch (error) {
-    console.error('Erro ao buscar empresa:', error);
-    res.status(500).json({ error: 'Erro ao buscar empresa: ' + error.message });
+    console.error('Error fetching company:', error);
+    res.status(500).json({ error: 'Error fetching company: ' + error.message });
   }
 });
 
 /**
- * Rota para criar uma nova empresa
+ * @swagger
+ * /api/adapters/companies:
+ *   post:
+ *     summary: Create new company
  */
 router.post('/', async (req, res) => {
   try {
-    // Verificar se já existe alguma empresa
-    const [empresas] = await sequelize.query(
-      `SELECT COUNT(*) as total FROM empresas WHERE ativa = true`
-    );
+    const companyCount = await Company.count({ where: { active: true }});
     
-    if (parseInt(empresas[0].total) > 0) {
-      return res.status(400).json({ error: 'Já existe uma empresa cadastrada' });
+    if (companyCount > 0) {
+      return res.status(400).json({ error: 'A company already exists' });
     }
     
-    // Validar campos obrigatórios
-    if (!req.body.nome || req.body.nome.trim() === '') {
-      return res.status(400).json({ error: 'Nome não pode ser vazio' });
-    }
-    if (!req.body.atividade || req.body.atividade.trim() === '') {
-      return res.status(400).json({ error: 'Atividade não pode ser vazia' });
-    }
-    if (!req.body.responsavel || req.body.responsavel.trim() === '') {
-      return res.status(400).json({ error: 'Responsável não pode ser vazio' });
-    }
-    if (!req.body.telefone_celular || req.body.telefone_celular.trim() === '') {
-      return res.status(400).json({ error: 'Celular não pode ser vazio' });
+    // Validate required fields
+    const requiredFields = {
+      name: req.body.nome,
+      activity: req.body.atividade,
+      responsible: req.body.responsavel,
+      phone_mobile: req.body.telefone_celular
+    };
+
+    for (const [field, value] of Object.entries(requiredFields)) {
+      if (!value?.trim()) {
+        return res.status(400).json({ error: `${field} cannot be empty` });
+      }
     }
     
-    // Gerar API Key
-    const apiKey = require('crypto').randomBytes(16).toString('hex').toUpperCase();
+    const company = await Company.create({
+      name: req.body.nome,
+      activity: req.body.atividade,
+      responsible: req.body.responsavel,
+      phone_mobile: req.body.telefone_celular,
+      api_key: crypto.randomBytes(16).toString('hex').toUpperCase(),
+      active: true,
+      registration_date: new Date()
+    });
     
-    // Inserir empresa
-    const [resultado] = await sequelize.query(`
-      INSERT INTO empresas (
-        nome, 
-        atividade, 
-        responsavel, 
-        telefone_celular, 
-        chave_api, 
-        ativa, 
-        ai_provider, 
-        ai_api_key, 
-        ai_model,
-        "createdAt",
-        "updatedAt"
-      ) VALUES (
-        '${req.body.nome}', 
-        '${req.body.atividade}', 
-        '${req.body.responsavel}', 
-        '${req.body.telefone_celular}', 
-        '${apiKey}', 
-        true, 
-        '${req.body.ai_provider || 'openai'}', 
-        '${req.body.ai_api_key || ''}', 
-        '${req.body.ai_model || 'gpt-3.5-turbo'}',
-        NOW(),
-        NOW()
-      ) RETURNING *;
-    `);
-    
-    res.status(201).json(resultado[0]);
+    res.status(201).json(company);
   } catch (error) {
-    console.error('Erro ao criar empresa:', error);
-    res.status(500).json({ error: 'Erro ao criar empresa: ' + error.message });
+    console.error('Error creating company:', error);
+    res.status(500).json({ error: 'Error creating company: ' + error.message });
   }
 });
 
 /**
- * Rota para atualizar uma empresa
+ * @swagger
+ * /api/adapters/companies/{id}:
+ *   put:
+ *     summary: Update company
  */
 router.put('/:id', async (req, res) => {
   try {
-    // Verificar se a empresa existe
-    const [empresas] = await sequelize.query(
-      `SELECT * FROM empresas WHERE id = ${req.params.id} AND ativa = true`
-    );
+    const company = await Company.findOne({
+      where: { 
+        id: req.params.id,
+        active: true
+      }
+    });
     
-    if (empresas.length === 0) {
-      return res.status(404).json({ error: 'Empresa não encontrada' });
+    if (!company) {
+      return res.status(404).json({ error: 'Company not found' });
     }
     
-    // Atualizar empresa
-    const [resultado] = await sequelize.query(`
-      UPDATE empresas SET
-        nome = '${req.body.nome || empresas[0].nome}',
-        atividade = '${req.body.atividade || empresas[0].atividade}',
-        responsavel = '${req.body.responsavel || empresas[0].responsavel}',
-        telefone_celular = '${req.body.telefone_celular || empresas[0].telefone_celular}',
-        ai_provider = '${req.body.ai_provider || empresas[0].ai_provider}',
-        ai_api_key = '${req.body.ai_api_key || empresas[0].ai_api_key}',
-        ai_model = '${req.body.ai_model || empresas[0].ai_model}',
-        "updatedAt" = NOW()
-      WHERE id = ${req.params.id}
-      RETURNING *;
-    `);
+    await company.update({
+      name: req.body.nome || company.name,
+      activity: req.body.atividade || company.activity,
+      responsible: req.body.responsavel || company.responsible,
+      phone_mobile: req.body.telefone_celular || company.phone_mobile
+    });
     
-    res.json(resultado[0]);
+    res.json(company);
   } catch (error) {
-    console.error('Erro ao atualizar empresa:', error);
-    res.status(500).json({ error: 'Erro ao atualizar empresa: ' + error.message });
+    console.error('Error updating company:', error);
+    res.status(500).json({ error: 'Error updating company: ' + error.message });
   }
 });
 
 /**
- * Rota para excluir uma empresa
+ * @swagger
+ * /api/adapters/companies/{id}:
+ *   delete:
+ *     summary: Delete company
  */
 router.delete('/:id', async (req, res) => {
   try {
-    // Verificar se a empresa existe
-    const [empresas] = await sequelize.query(
-      `SELECT * FROM empresas WHERE id = ${req.params.id} AND ativa = true`
-    );
+    const company = await Company.findOne({
+      where: { 
+        id: req.params.id,
+        active: true
+      }
+    });
     
-    if (empresas.length === 0) {
-      return res.status(404).json({ error: 'Empresa não encontrada' });
+    if (!company) {
+      return res.status(404).json({ error: 'Company not found' });
     }
     
-    // Desativar empresa (exclusão lógica)
-    await sequelize.query(`
-      UPDATE empresas SET
-        ativa = false,
-        "updatedAt" = NOW()
-      WHERE id = ${req.params.id}
-    `);
-    
+    await company.update({ active: false });
     res.status(204).send();
   } catch (error) {
-    console.error('Erro ao excluir empresa:', error);
-    res.status(500).json({ error: 'Erro ao excluir empresa: ' + error.message });
+    console.error('Error deleting company:', error);
+    res.status(500).json({ error: 'Error deleting company: ' + error.message });
   }
 });
 

@@ -16,15 +16,15 @@ async function createDatabase() {
 
     // Verifica se o banco já existe
     const checkResult = await client.query(
-      "SELECT 1 FROM pg_database WHERE datname = 'agenda'"
+      "SELECT 1 FROM pg_database WHERE datname = 'agendero'"
     );
 
     if (checkResult.rows.length === 0) {
       // Cria o banco de dados se não existir
-      await client.query('CREATE DATABASE agenda');
-      console.log('Banco de dados "agenda" criado com sucesso!');
+      await client.query('CREATE DATABASE agendero');
+      console.log('Banco de dados "agendero" criado com sucesso!');
     } else {
-      console.log('Banco de dados "agenda" já existe.');
+      console.log('Banco de dados "agendero" já existe.');
     }
 
   } catch (error) {

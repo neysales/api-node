@@ -6,127 +6,113 @@ module.exports = (sequelize, DataTypes) => {
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
-      defaultValue: DataTypes.UUIDV4,
-      field: 'id'
+      defaultValue: DataTypes.UUIDV4
     },
-    nome: {
+    name: {
       type: DataTypes.STRING(150),
-      allowNull: false,
-      field: 'nome'
+      allowNull: false
     },
-    atividade: {
+    activity: {
       type: DataTypes.STRING(150),
-      allowNull: false,
-      field: 'atividade'
+      allowNull: false
     },
-    responsavel: {
+    responsible: {
       type: DataTypes.STRING(150),
-      allowNull: false,
-      field: 'responsavel'
+      allowNull: false
     },
-    enderecoRua: {
-      type: DataTypes.TEXT,
-      field: 'endereco_rua'
+    address_street: {
+      type: DataTypes.STRING(150),
+      allowNull: true
     },
-    enderecoCidade: {
-      type: DataTypes.TEXT,
-      field: 'endereco_cidade'
+    address_city: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     },
-    enderecoEstado: {
-      type: DataTypes.TEXT,
-      field: 'endereco_estado'
+    address_state: {
+      type: DataTypes.STRING(2),
+      allowNull: true
     },
-    enderecoBairro: {
-      type: DataTypes.TEXT,
-      field: 'endereco_bairro'
+    address_neighborhood: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     },
-    enderecoCep: {
-      type: DataTypes.TEXT,
-      field: 'endereco_cep'
+    address_zip: {
+      type: DataTypes.STRING(9),
+      allowNull: true
     },
-    enderecoPais: {
-      type: DataTypes.TEXT,
-      field: 'endereco_pais'
+    address_country: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      defaultValue: 'Brasil'
     },
-    enderecoComplemento: {
-      type: DataTypes.TEXT,
-      field: 'endereco_complemento'
+    address_complement: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     },
-    enderecoNumero: {
-      type: DataTypes.TEXT,
-      field: 'endereco_numero'
+    address_number: {
+      type: DataTypes.STRING(20),
+      allowNull: true
     },
-    telefoneFixo: {
-      type: DataTypes.TEXT,
-      field: 'telefone_fixo'
+    phone_landline: {
+      type: DataTypes.STRING(20),
+      allowNull: true
     },
-    telefoneCelular: {
-      type: DataTypes.TEXT,
-      field: 'telefone_celular'
+    phone_mobile: {
+      type: DataTypes.STRING(20),
+      allowNull: false
     },
-    telefoneWhatsapp: {
-      type: DataTypes.TEXT,
-      field: 'telefone_whatsapp'
+    phone_whatsapp: {
+      type: DataTypes.STRING(20),
+      allowNull: true
     },
     email: {
       type: DataTypes.STRING(255),
-      field: 'email'
+      allowNull: false
     },
-    chaveApi: {
-      type: DataTypes.UUID,
-      allowNull: true,
-      defaultValue: '00000000-0000-0000-0000-000000000000',
-      field: 'chave_api'
+    api_key: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      unique: true
     },
-    ativa: {
+    active: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: true,
-      field: 'ativa'
+      defaultValue: true
     },
-    dataCadastro: {
+    registration_date: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW,
-      field: 'data_cadastro'
-    },
-    // Campos para configuração da IA
-    aiProvider: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      field: 'ai_provider',
-      defaultValue: 'openai',
-      validate: {
-        isIn: [['openai', 'anthropic', 'google']]
-      }
-    },
-    aiApiKey: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      field: 'ai_api_key'
-    },
-    aiModel: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      field: 'ai_model',
-      defaultValue: 'gpt-3.5-turbo'
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      field: 'createdAt'
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      field: 'updatedAt'
+      defaultValue: DataTypes.NOW
     }
   }, {
-    tableName: 'empresas',
-    timestamps: true,
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    tableName: 'companies',
+    timestamps: false
   });
+
+  Company.associate = function(models) {
+    Company.hasMany(models.Attendant, {
+      foreignKey: 'company_id',
+      as: 'attendants'
+    });
+    Company.hasMany(models.Specialty, {
+      foreignKey: 'company_id',
+      as: 'specialties'
+    });
+    Company.hasMany(models.Appointment, {
+      foreignKey: 'company_id',
+      as: 'appointments'
+    });
+    Company.hasOne(models.Config, {
+      foreignKey: 'company_id',
+      as: 'config'
+    });
+    Company.belongsToMany(models.Client, {
+      through: 'clients_companies',
+      foreignKey: 'company_id',
+      otherKey: 'client_id',
+      as: 'clients'
+    });
+  };
 
   return Company;
 };

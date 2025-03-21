@@ -6,48 +6,49 @@ module.exports = (sequelize, DataTypes) => {
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
-      defaultValue: DataTypes.UUIDV4,
-      field: 'id'
+      defaultValue: DataTypes.UUIDV4
     },
     name: {
       type: DataTypes.STRING(150),
-      allowNull: false,
-      field: 'nome'
+      allowNull: false
     },
     description: {
       type: DataTypes.TEXT,
-      allowNull: false,
-      field: 'descricao'
+      allowNull: true
     },
-    companyId: {
+    company_id: {
       type: DataTypes.UUID,
       allowNull: false,
-      field: 'empresa_id',
       references: {
-        model: 'empresas',
+        model: 'companies',
         key: 'id'
       }
     },
-    isActive: {
+    active: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: true,
-      field: 'ativa'
+      defaultValue: true
     },
-    createdAt: {
+    registration_date: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW,
-      field: 'data_cadastro'
+      defaultValue: DataTypes.NOW
     }
   }, {
-    tableName: 'especialidades',
+    tableName: 'specialties',
     timestamps: false
   });
 
   Specialty.associate = function(models) {
-    Specialty.belongsTo(models.Company, { foreignKey: 'empresa_id', as: 'empresa' });
-    Specialty.hasMany(models.Attendant, { foreignKey: 'especialidade_id', as: 'atendentes' });
+    Specialty.belongsTo(models.Company, {
+      foreignKey: 'company_id',
+      as: 'company'
+    });
+    
+    Specialty.hasMany(models.Attendant, {
+      foreignKey: 'specialty_id',
+      as: 'attendants'
+    });
   };
 
   return Specialty;

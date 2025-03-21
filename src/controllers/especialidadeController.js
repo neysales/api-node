@@ -1,9 +1,10 @@
 const { Specialty } = require('../models');
+const { v4: uuidv4 } = require('uuid');
 
 const getAllEspecialidades = async (req, res) => {
   try {
     const especialidades = await Specialty.findAll({
-      where: { companyId: req.empresa.id }
+      where: { company_id: req.empresa.id }
     });
     
     return res.json(especialidades);
@@ -18,7 +19,7 @@ const getEspecialidadeById = async (req, res) => {
     const especialidade = await Specialty.findOne({
       where: { 
         id: req.params.id,
-        companyId: req.empresa.id
+        company_id: req.empresa.id
       }
     });
 
@@ -36,10 +37,12 @@ const getEspecialidadeById = async (req, res) => {
 const createEspecialidade = async (req, res) => {
   try {
     const novaEspecialidade = await Specialty.create({
+      id: uuidv4(),
       name: req.body.name,
       description: req.body.description,
-      companyId: req.empresa.id,
-      isActive: req.body.isActive !== undefined ? req.body.isActive : true
+      company_id: req.empresa.id,
+      active: req.body.active !== undefined ? req.body.active : true,
+      registration_date: new Date()
     });
 
     return res.status(201).json(novaEspecialidade);
@@ -54,7 +57,7 @@ const updateEspecialidade = async (req, res) => {
     const especialidade = await Specialty.findOne({
       where: { 
         id: req.params.id,
-        companyId: req.empresa.id
+        company_id: req.empresa.id
       }
     });
     
@@ -65,7 +68,7 @@ const updateEspecialidade = async (req, res) => {
     await especialidade.update({
       name: req.body.name || especialidade.name,
       description: req.body.description || especialidade.description,
-      isActive: req.body.isActive !== undefined ? req.body.isActive : especialidade.isActive
+      active: req.body.active !== undefined ? req.body.active : especialidade.active
     });
     
     return res.json(especialidade);
@@ -80,7 +83,7 @@ const deleteEspecialidade = async (req, res) => {
     const especialidade = await Specialty.findOne({
       where: { 
         id: req.params.id,
-        companyId: req.empresa.id
+        company_id: req.empresa.id
       }
     });
     

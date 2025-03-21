@@ -16,45 +16,161 @@ const checkEmpresa = async (req, res) => {
   }
 };
 
-const createEmpresa = async (req, res) => {
+const getAllEmpresas = async (req, res) => {
   try {
-    const empresaExistente = await Company.findOne({ where: { ativa: true } });
-    if (empresaExistente) {
-      return res.status(409).json({ error: 'Já existe uma empresa ativa cadastrada' });
-    }
+    const empresas = await Company.findAll({
+      attributes: { 
+        exclude: ['api_key'] // Não retorna a api_key por segurança
+      }
+    });
+    
+    return res.json(empresas);
+  } catch (error) {
+    console.error('Erro ao buscar empresas:', error);
+    return res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+};
 
-    const novaEmpresa = await Company.create({
-      nome: req.body.nome,
-      atividade: req.body.atividade,
-      responsavel: req.body.responsavel,
-      enderecoRua: req.body.enderecoRua,
-      enderecoCidade: req.body.enderecoCidade,
-      enderecoEstado: req.body.enderecoEstado,
-      enderecoBairro: req.body.enderecoBairro,
-      enderecoCep: req.body.enderecoCep,
-      enderecoPais: req.body.enderecoPais,
-      enderecoComplemento: req.body.enderecoComplemento,
-      enderecoNumero: req.body.enderecoNumero,
-      telefoneFixo: req.body.telefoneFixo,
-      telefoneCelular: req.body.telefoneCelular,
-      telefoneWhatsapp: req.body.telefoneWhatsapp,
-      email: req.body.email,
-      ativa: true,
-      dataCadastro: new Date(),
-      chaveApi: uuidv4(),
-      aiProvider: req.body.aiProvider || 'openai',
-      aiApiKey: req.body.aiApiKey,
-      aiModel: req.body.aiModel || 'gpt-3.5-turbo'
+const getEmpresaById = async (req, res) => {
+  try {
+    const empresa = await Company.findOne({
+      where: { id: req.params.id },
+      attributes: { 
+        exclude: ['api_key']
+      }
     });
 
-    return res.status(201).json(novaEmpresa);
+    if (!empresa) {
+      return res.status(404).json({ error: 'Empresa não encontrada' });
+    }
+
+    return res.json(empresa);
+  } catch (error) {
+    console.error('Erro ao buscar empresa:', error);
+    return res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+};
+
+const createEmpresa = async (req, res) => {
+  try {
+    const novaEmpresa = await Company.create({
+      id: uuidv4(),
+      name: req.body.name,
+      activity: req.body.activity,
+      responsible: req.body.responsible,
+      address_street: req.body.address_street,
+      address_city: req.body.address_city,
+      address_state: req.body.address_state,
+      address_neighborhood: req.body.address_neighborhood,
+      address_zip: req.body.address_zip,
+      address_country: req.body.address_country || 'Brasil',
+      address_complement: req.body.address_complement,
+      address_number: req.body.address_number,
+      phone_landline: req.body.phone_landline,
+      phone_mobile: req.body.phone_mobile,
+      phone_whatsapp: req.body.phone_whatsapp,
+      email: req.body.email,
+      active: true,
+      registration_date: new Date(),
+      api_key: uuidv4()
+    });
+
+    // Remove api_key do retorno por segurança
+    const { api_key, ...empresaSemApiKey } = novaEmpresa.toJSON();
+
+    return res.status(201).json(empresaSemApiKey);
   } catch (error) {
     console.error('Erro ao criar empresa:', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 };
 
+const updateEmpresa = async (req, res) => {
+  try {
+    const empresa = await Company.findOne({
+      where: { api_key: req.headers['x-api-key'] }
+    });
+    
+    if (!empresa) {
+      return res.status(404).json({ error: 'Empresa não encontrada' });
+    }
+    
+    await empresa.update({
+      name: req.body.name || empresa.name,
+      activity: req.body.activity || empresa.activity,
+      responsible: req.body.responsible || empresa.responsible,
+      address_street: req.body.address_street || empresa.address_street,
+      address_city: req.body.address_city || empresa.address_city,
+      address_state: req.body.address_state || empresa.address_state,
+      address_neighborhood: req.body.address_neighborhood || empresa.address_neighborhood,
+      address_zip: req.body.address_zip || empresa.address_zip,
+      address_country: req.body.address_country || empresa.address_country,
+      address_complement: req.body.address_complement || empresa.address_complement,
+      address_number: req.body.address_number || empresa.address_number,
+      phone_landline: req.body.phone_landline || empresa.phone_landline,
+      phone_mobile: req.body.phone_mobile || empresa.phone_mobile,
+      phone_whatsapp: req.body.phone_whatsapp || empresa.phone_whatsapp,
+      email: req.body.email || empresa.email,
+      active: req.body.active !== undefined ? req.body.active : empresa.active
+    });
+
+    // Remove api_key do retorno por segurança
+    const { api_key, ...empresaAtualizada } = empresa.toJSON();
+    
+    return res.json(empresaAtualizada);
+  } catch (error) {
+    console.error('Erro ao atualizar empresa:', error);
+    return res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+};
+
+const deleteEmpresa = async (req, res) => {
+  try {
+    const empresa = await Company.findOne({
+      where: { api_key: req.headers['x-api-key'] }
+    });
+    
+    if (!empresa) {
+      return res.status(404).json({ error: 'Empresa não encontrada' });
+    }
+    
+    await empresa.destroy();
+    return res.status(204).send();
+  } catch (error) {
+    console.error('Erro ao excluir empresa:', error);
+    return res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+};
+
+const regenerateApiKey = async (req, res) => {
+  try {
+    const empresa = await Company.findOne({
+      where: { api_key: req.headers['x-api-key'] }
+    });
+    
+    if (!empresa) {
+      return res.status(404).json({ error: 'Empresa não encontrada' });
+    }
+
+    const newApiKey = uuidv4();
+    await empresa.update({ api_key: newApiKey });
+
+    return res.json({ 
+      message: 'API Key regenerada com sucesso', 
+      api_key: newApiKey 
+    });
+  } catch (error) {
+    console.error('Erro ao regenerar API Key:', error);
+    return res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+};
+
 module.exports = {
   checkEmpresa,
-  createEmpresa
+  getAllEmpresas,
+  getEmpresaById,
+  createEmpresa,
+  updateEmpresa,
+  deleteEmpresa,
+  regenerateApiKey
 };

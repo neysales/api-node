@@ -95,25 +95,31 @@
                             <a class="nav-link" href="#autenticacao">Autenticação</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#empresas">Empresas</a>
+                            <a class="nav-link" href="#empresas">Empresas (Companies)</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#clientes">Clientes</a>
+                            <a class="nav-link" href="#clientes">Clientes (Clients)</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#atendentes">Atendentes</a>
+                            <a class="nav-link" href="#atendentes">Atendentes (Attendants)</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#agendamentos">Agendamentos</a>
+                            <a class="nav-link" href="#agendamentos">Agendamentos (Appointments)</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#especialidades">Especialidades</a>
+                            <a class="nav-link" href="#especialidades">Especialidades (Specialties)</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#horarios">Horários</a>
+                            <a class="nav-link" href="#horarios">Horários (Schedules)</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#config">Configurações</a>
+                            <a class="nav-link" href="#config">Configurações (Config)</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#ai-config">Configurações de IA (AI Config)</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#ai-integration">Integração com IA</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#exemplos">Exemplos de Uso</a>
@@ -133,26 +139,92 @@
 
                 <section id="introducao">
                     <h2>Introdução</h2>
-                    <p>A API de Agendamento é um serviço RESTful que permite gerenciar empresas, clientes, atendentes e agendamentos. Todas as respostas são em formato JSON.</p>
-                    <div class="endpoint">
-                        <strong>URL Base:</strong>
-                        <code id="urlBase">Carregando...</code>
-                    </div>
+                    <p>
+                        Bem-vindo à documentação da API Agendero. Esta API foi desenvolvida para fornecer um sistema completo de agendamento
+                        de serviços, com suporte a múltiplas empresas (multi-tenant), gerenciamento de clientes, atendentes, especialidades,
+                        horários e agendamentos.
+                    </p>
+                    <p>
+                        A API utiliza uma arquitetura RESTful e retorna dados no formato JSON. Todas as requisições para rotas protegidas
+                        devem incluir uma chave de API válida no cabeçalho <code>x-api-key</code>.
+                    </p>
+                    <h3>Arquitetura Multi-tenant</h3>
+                    <p>
+                        A API Agendero implementa uma arquitetura multi-tenant completa, onde cada empresa possui seus próprios dados isolados.
+                        Isso significa que:
+                    </p>
+                    <ul>
+                        <li>Cada empresa possui sua própria chave de API para autenticação</li>
+                        <li>Todas as consultas são automaticamente filtradas pelo ID da empresa do usuário autenticado</li>
+                        <li>Cada empresa pode ter suas próprias configurações, incluindo configurações de IA</li>
+                    </ul>
+                    <h3>Estrutura da API</h3>
+                    <p>
+                        A API é organizada nas seguintes entidades principais:
+                    </p>
+                    <ul>
+                        <li><strong>Companies</strong> (Empresas): Gerenciamento de empresas cadastradas no sistema</li>
+                        <li><strong>Clients</strong> (Clientes): Gerenciamento de clientes que utilizam os serviços</li>
+                        <li><strong>Attendants</strong> (Atendentes): Profissionais que realizam os atendimentos</li>
+                        <li><strong>Specialties</strong> (Especialidades): Serviços oferecidos pelas empresas</li>
+                        <li><strong>Schedules</strong> (Horários): Disponibilidade de horários dos atendentes</li>
+                        <li><strong>Appointments</strong> (Agendamentos): Agendamentos realizados pelos clientes</li>
+                        <li><strong>Config</strong> (Configurações): Configurações gerais do sistema</li>
+                        <li><strong>AI Config</strong> (Configurações de IA): Configurações específicas para integração com IA</li>
+                    </ul>
+                    <h3>Autenticação</h3>
+                    <p>
+                        A autenticação é realizada através de uma chave de API (API Key) que deve ser incluída no cabeçalho
+                        <code>x-api-key</code> de todas as requisições para rotas protegidas. Cada empresa possui sua própria
+                        chave de API, que é armazenada na tabela <code>companies</code>.
+                    </p>
+                    <h3>Isolamento de Dados</h3>
+                    <p>
+                        O sistema implementa um middleware de isolamento de dados que garante que todas as consultas sejam
+                        filtradas pelo ID da empresa do usuário autenticado. Isso significa que uma empresa só pode acessar
+                        seus próprios dados, garantindo a segurança e privacidade das informações.
+                    </p>
                 </section>
 
                 <section id="autenticacao">
                     <h2>Autenticação</h2>
-                    <p>A API utiliza autenticação via chave API. Para todas as requisições (exceto criação de empresa), você deve incluir o header:</p>
-                    <pre><code>x-api-key: SUA_CHAVE_API (Authentication__ApiKey)</code></pre>
-                    <p>Para obter sua chave API, primeiro crie uma empresa usando o endpoint <code>/empresas</code>.</p>
+                    <p>
+                        A API utiliza autenticação baseada em chave de API (API Key). Cada empresa possui sua própria chave de API,
+                        que é gerada automaticamente durante o cadastro da empresa.
+                    </p>
+                    <p>
+                        Para acessar as rotas protegidas, você deve incluir a chave de API no cabeçalho <code>x-api-key</code> de todas as requisições.
+                    </p>
+                    <div class="endpoint">
+                        <h4>Exemplo de Requisição com Autenticação:</h4>
+                        <pre><code>curl -X GET "https://api.agendero.com/clients" \
+-H "x-api-key: sua-chave-api-aqui"</code></pre>
+                    </div>
+                    <div class="alert alert-warning">
+                        <strong>Importante:</strong> Mantenha sua chave de API em segurança. Não compartilhe ou exponha a chave em código
+                        cliente ou repositórios públicos.
+                    </div>
+                    <h3>Rotas Públicas vs. Rotas Protegidas</h3>
+                    <p>
+                        A API possui dois tipos de rotas:
+                    </p>
+                    <ul>
+                        <li><strong>Rotas Públicas:</strong> Não requerem autenticação. Exemplos incluem o registro de empresas e login.</li>
+                        <li><strong>Rotas Protegidas:</strong> Requerem autenticação via chave de API e implementam isolamento de dados por empresa.</li>
+                    </ul>
+                    <h3>Obtenção da Chave de API</h3>
+                    <p>
+                        A chave de API é gerada automaticamente durante o cadastro da empresa e pode ser visualizada 
+                        no painel administrativo ou através da API de empresas.
+                    </p>
                 </section>
 
                 <section id="empresas">
-                    <h2>Empresas</h2>
+                    <h2>Empresas (Companies)</h2>
                     
                     <div class="endpoint">
                         <span class="method post">POST</span>
-                        <code>/empresas</code>
+                        <code>/companies</code>
                         <h4>Estrutura da Tabela:</h4>
                         <table class="table table-bordered">
                             <thead>
@@ -164,55 +236,55 @@
                             </thead>
                             <tbody>
                                 <tr><td>id</td><td>UUID</td><td>Chave primária</td></tr>
-                                <tr><td>nome</td><td>TEXT</td><td>Nome da empresa (obrigatório)</td></tr>
-                                <tr><td>atividade</td><td>TEXT</td><td>Ramo de atividade (obrigatório)</td></tr>
-                                <tr><td>responsavel</td><td>TEXT</td><td>Nome do responsável (obrigatório)</td></tr>
-                                <tr><td>endereco_rua</td><td>TEXT</td><td>Rua do endereço</td></tr>
-                                <tr><td>endereco_cidade</td><td>TEXT</td><td>Cidade do endereço</td></tr>
-                                <tr><td>endereco_estado</td><td>TEXT</td><td>Estado do endereço</td></tr>
-                                <tr><td>endereco_bairro</td><td>TEXT</td><td>Bairro do endereço</td></tr>
-                                <tr><td>endereco_cep</td><td>TEXT</td><td>CEP do endereço</td></tr>
-                                <tr><td>endereco_pais</td><td>TEXT</td><td>País do endereço</td></tr>
-                                <tr><td>endereco_complemento</td><td>TEXT</td><td>Complemento do endereço</td></tr>
-                                <tr><td>endereco_numero</td><td>TEXT</td><td>Número do endereço</td></tr>
-                                <tr><td>telefone_fixo</td><td>TEXT</td><td>Telefone fixo</td></tr>
-                                <tr><td>telefone_celular</td><td>TEXT</td><td>Telefone celular</td></tr>
+                                <tr><td>name</td><td>TEXT</td><td>Nome da empresa (obrigatório)</td></tr>
+                                <tr><td>activity</td><td>TEXT</td><td>Ramo de atividade (obrigatório)</td></tr>
+                                <tr><td>responsible</td><td>TEXT</td><td>Nome do responsável (obrigatório)</td></tr>
+                                <tr><td>address_street</td><td>TEXT</td><td>Rua do endereço</td></tr>
+                                <tr><td>address_city</td><td>TEXT</td><td>Cidade do endereço</td></tr>
+                                <tr><td>address_state</td><td>TEXT</td><td>Estado do endereço</td></tr>
+                                <tr><td>address_neighborhood</td><td>TEXT</td><td>Bairro do endereço</td></tr>
+                                <tr><td>address_zip</td><td>TEXT</td><td>CEP do endereço</td></tr>
+                                <tr><td>address_country</td><td>TEXT</td><td>País do endereço</td></tr>
+                                <tr><td>address_complement</td><td>TEXT</td><td>Complemento do endereço</td></tr>
+                                <tr><td>address_number</td><td>TEXT</td><td>Número do endereço</td></tr>
+                                <tr><td>phone</td><td>TEXT</td><td>Telefone fixo</td></tr>
+                                <tr><td>phone_mobile</td><td>TEXT</td><td>Telefone celular</td></tr>
                                 <tr><td>email</td><td>TEXT</td><td>Email da empresa</td></tr>
-                                <tr><td>logo</td><td>TEXT</td><td>URL da logo da empresa</td></tr>
-                                <tr><td>ativa</td><td>BOOLEAN</td><td>Status da empresa (obrigatório)</td></tr>
-                                <tr><td>data_cadastro</td><td>TIMESTAMP WITH TIME ZONE</td><td>Data de cadastro (obrigatório)</td></tr>
-                                <tr><td>chave_api</td><td>UUID</td><td>Chave de API (default: UUID zero)</td></tr>
+                                <tr><td>logo_url</td><td>TEXT</td><td>URL da logo da empresa</td></tr>
+                                <tr><td>active</td><td>BOOLEAN</td><td>Status da empresa (obrigatório)</td></tr>
+                                <tr><td>registration_date</td><td>TIMESTAMP WITH TIME ZONE</td><td>Data de cadastro (obrigatório)</td></tr>
+                                <tr><td>api_key</td><td>UUID</td><td>Chave de API (default: UUID zero)</td></tr>
                             </tbody>
                         </table>
 
                         <h4>Corpo da Requisição:</h4>
                         <pre><code>{
-  "nome": "Minha Empresa",
-  "atividade": "Barbearia",
-  "responsavel": "João Silva",
-  "telefone_celular": "11999999999",
+  "name": "Minha Empresa",
+  "activity": "Barbearia",
+  "responsible": "João Silva",
+  "phone_mobile": "11999999999",
   "email": "contato@minhaempresa.com",
-  "endereco_rua": "Rua Principal",
-  "endereco_cidade": "São Paulo",
-  "endereco_estado": "SP",
-  "endereco_bairro": "Centro",
-  "endereco_cep": "01001-001",
-  "endereco_pais": "Brasil",
-  "endereco_complemento": "Sala 123",
-  "endereco_numero": "100",
-  "telefone_fixo": "1133333333",
-  "logo": "https://minha-empresa.com/logo.png",
-  "ativa": true
+  "address_street": "Rua Principal",
+  "address_city": "São Paulo",
+  "address_state": "SP",
+  "address_neighborhood": "Centro",
+  "address_zip": "01001-001",
+  "address_country": "Brasil",
+  "address_complement": "Sala 123",
+  "address_number": "100",
+  "phone": "1133333333",
+  "logo_url": "https://minha-empresa.com/logo.png",
+  "active": true
 }</code></pre>
                     </div>
                 </section>
 
                 <section id="clientes">
-                    <h2>Clientes</h2>
+                    <h2>Clientes (Clients)</h2>
                     
                     <div class="endpoint">
                         <span class="method post">POST</span>
-                        <code>/clientes</code>
+                        <code>/clients</code>
                         <h4>Estrutura da Tabela:</h4>
                         <table class="table table-bordered">
                             <thead>
@@ -224,54 +296,54 @@
                             </thead>
                             <tbody>
                                 <tr><td>id</td><td>UUID</td><td>Chave primária</td></tr>
-                                <tr><td>nome</td><td>VARCHAR(150)</td><td>Nome do cliente (obrigatório)</td></tr>
+                                <tr><td>name</td><td>VARCHAR(150)</td><td>Nome do cliente (obrigatório)</td></tr>
                                 <tr><td>cpf_cnpj</td><td>VARCHAR(20)</td><td>CPF ou CNPJ do cliente (único)</td></tr>
-                                <tr><td>data_nascimento</td><td>DATE</td><td>Data de nascimento</td></tr>
-                                <tr><td>telefone_celular</td><td>TEXT</td><td>Telefone de contato (obrigatório)</td></tr>
+                                <tr><td>birth_date</td><td>DATE</td><td>Data de nascimento</td></tr>
+                                <tr><td>phone_mobile</td><td>TEXT</td><td>Telefone de contato (obrigatório)</td></tr>
                                 <tr><td>email</td><td>VARCHAR(255)</td><td>Email do cliente (único)</td></tr>
-                                <tr><td>endereco_rua</td><td>TEXT</td><td>Rua do endereço</td></tr>
-                                <tr><td>endereco_cidade</td><td>TEXT</td><td>Cidade do endereço</td></tr>
-                                <tr><td>endereco_estado</td><td>TEXT</td><td>Estado do endereço</td></tr>
-                                <tr><td>endereco_bairro</td><td>TEXT</td><td>Bairro do endereço</td></tr>
-                                <tr><td>endereco_cep</td><td>TEXT</td><td>CEP do endereço</td></tr>
-                                <tr><td>endereco_pais</td><td>TEXT</td><td>País do endereço</td></tr>
-                                <tr><td>endereco_complemento</td><td>TEXT</td><td>Complemento do endereço</td></tr>
-                                <tr><td>endereco_numero</td><td>TEXT</td><td>Número do endereço</td></tr>
-                                <tr><td>observacoes</td><td>TEXT</td><td>Observações gerais</td></tr>
-                                <tr><td>data_cadastro</td><td>TIMESTAMP WITH TIME ZONE</td><td>Data de cadastro (default: CURRENT_TIMESTAMP)</td></tr>
-                                <tr><td>senha</td><td>TEXT</td><td>Senha do cliente (obrigatório)</td></tr>
-                                <tr><td>ativo</td><td>BOOLEAN</td><td>Status do cliente (default: true)</td></tr>
+                                <tr><td>address_street</td><td>TEXT</td><td>Rua do endereço</td></tr>
+                                <tr><td>address_city</td><td>TEXT</td><td>Cidade do endereço</td></tr>
+                                <tr><td>address_state</td><td>TEXT</td><td>Estado do endereço</td></tr>
+                                <tr><td>address_neighborhood</td><td>TEXT</td><td>Bairro do endereço</td></tr>
+                                <tr><td>address_zip</td><td>TEXT</td><td>CEP do endereço</td></tr>
+                                <tr><td>address_country</td><td>TEXT</td><td>País do endereço</td></tr>
+                                <tr><td>address_complement</td><td>TEXT</td><td>Complemento do endereço</td></tr>
+                                <tr><td>address_number</td><td>TEXT</td><td>Número do endereço</td></tr>
+                                <tr><td>notes</td><td>TEXT</td><td>Observações gerais</td></tr>
+                                <tr><td>registration_date</td><td>TIMESTAMP WITH TIME ZONE</td><td>Data de cadastro (default: CURRENT_TIMESTAMP)</td></tr>
+                                <tr><td>password</td><td>TEXT</td><td>Senha do cliente (obrigatório)</td></tr>
+                                <tr><td>active</td><td>BOOLEAN</td><td>Status do cliente (default: true)</td></tr>
                             </tbody>
                         </table>
 
                         <h4>Corpo da Requisição:</h4>
                         <pre><code>{
-  "nome": "Cliente Exemplo",
+  "name": "Cliente Exemplo",
   "cpf_cnpj": "123.456.789-00",
-  "data_nascimento": "1990-01-01",
-  "telefone_celular": "11999999999",
+  "birth_date": "1990-01-01",
+  "phone_mobile": "11999999999",
   "email": "cliente@email.com",
-  "senha": "senha123",
-  "endereco_rua": "Rua do Cliente",
-  "endereco_cidade": "São Paulo",
-  "endereco_estado": "SP",
-  "endereco_bairro": "Centro",
-  "endereco_cep": "01001-001",
-  "endereco_pais": "Brasil",
-  "endereco_complemento": "Apto 123",
-  "endereco_numero": "456",
-  "observacoes": "Observações sobre o cliente",
-  "ativo": true
+  "password": "senha123",
+  "address_street": "Rua do Cliente",
+  "address_city": "São Paulo",
+  "address_state": "SP",
+  "address_neighborhood": "Centro",
+  "address_zip": "01001-001",
+  "address_country": "Brasil",
+  "address_complement": "Apto 123",
+  "address_number": "456",
+  "notes": "Observações sobre o cliente",
+  "active": true
 }</code></pre>
                     </div>
                 </section>
 
                 <section id="atendentes">
-                    <h2>Atendentes</h2>
+                    <h2>Atendentes (Attendants)</h2>
                     
                     <div class="endpoint">
                         <span class="method post">POST</span>
-                        <code>/atendentes</code>
+                        <code>/attendants</code>
                         <h4>Estrutura da Tabela:</h4>
                         <table class="table table-bordered">
                             <thead>
@@ -283,34 +355,34 @@
                             </thead>
                             <tbody>
                                 <tr><td>id</td><td>UUID</td><td>Chave primária</td></tr>
-                                <tr><td>nome</td><td>VARCHAR(100)</td><td>Nome do atendente (obrigatório)</td></tr>
-                                <tr><td>especialidade_id</td><td>UUID</td><td>ID da especialidade (obrigatório)</td></tr>
-                                <tr><td>empresa_id</td><td>UUID</td><td>ID da empresa (obrigatório)</td></tr>
-                                <tr><td>telefone_celular</td><td>TEXT</td><td>Telefone de contato (obrigatório)</td></tr>
+                                <tr><td>name</td><td>VARCHAR(100)</td><td>Nome do atendente (obrigatório)</td></tr>
+                                <tr><td>specialty_id</td><td>UUID</td><td>ID da especialidade (obrigatório)</td></tr>
+                                <tr><td>company_id</td><td>UUID</td><td>ID da empresa (obrigatório)</td></tr>
+                                <tr><td>phone_mobile</td><td>TEXT</td><td>Telefone de contato (obrigatório)</td></tr>
                                 <tr><td>email</td><td>VARCHAR(255)</td><td>Email do atendente (obrigatório)</td></tr>
-                                <tr><td>data_contratacao</td><td>TIMESTAMP WITH TIME ZONE</td><td>Data de contratação (obrigatório)</td></tr>
-                                <tr><td>administrador</td><td>BOOLEAN</td><td>Se é administrador (default: false)</td></tr>
+                                <tr><td>hire_date</td><td>TIMESTAMP WITH TIME ZONE</td><td>Data de contratação (obrigatório)</td></tr>
+                                <tr><td>is_admin</td><td>BOOLEAN</td><td>Se é administrador (default: false)</td></tr>
                             </tbody>
                         </table>
 
                         <h4>Corpo da Requisição:</h4>
                         <pre><code>{
-  "nome": "Atendente Exemplo",
-  "especialidade_id": "550e8400-e29b-41d4-a716-446655440000",
-  "telefone_celular": "11999999999",
+  "name": "Atendente Exemplo",
+  "specialty_id": "550e8400-e29b-41d4-a716-446655440000",
+  "phone_mobile": "11999999999",
   "email": "atendente@email.com",
-  "data_contratacao": "2025-02-22T00:00:00.000Z",
-  "administrador": false
+  "hire_date": "2025-02-22T00:00:00.000Z",
+  "is_admin": false
 }</code></pre>
                     </div>
                 </section>
 
                 <section id="agendamentos">
-                    <h2>Agendamentos</h2>
+                    <h2>Agendamentos (Appointments)</h2>
                     
                     <div class="endpoint">
                         <span class="method post">POST</span>
-                        <code>/agendamentos</code>
+                        <code>/appointments</code>
                         <h4>Estrutura da Tabela:</h4>
                         <table class="table table-bordered">
                             <thead>
@@ -322,30 +394,34 @@
                             </thead>
                             <tbody>
                                 <tr><td>id</td><td>UUID</td><td>Chave primária</td></tr>
-                                <tr><td>cliente_id</td><td>UUID</td><td>ID do cliente (obrigatório)</td></tr>
-                                <tr><td>empresa_id</td><td>UUID</td><td>ID da empresa (obrigatório)</td></tr>
-                                <tr><td>atendente_id</td><td>UUID</td><td>ID do atendente (obrigatório)</td></tr>
-                                <tr><td>data_agendamento</td><td>TIMESTAMP WITH TIME ZONE</td><td>Data e hora do agendamento (obrigatório)</td></tr>
-                                <tr><td>servico_realizado</td><td>BOOLEAN</td><td>Se o serviço foi realizado (obrigatório)</td></tr>
+                                <tr><td>client_id</td><td>UUID</td><td>ID do cliente (obrigatório)</td></tr>
+                                <tr><td>company_id</td><td>UUID</td><td>ID da empresa (obrigatório)</td></tr>
+                                <tr><td>attendant_id</td><td>UUID</td><td>ID do atendente (obrigatório)</td></tr>
+                                <tr><td>appointment_date</td><td>TIMESTAMP WITH TIME ZONE</td><td>Data e hora do agendamento (obrigatório)</td></tr>
+                                <tr><td>service_performed</td><td>BOOLEAN</td><td>Se o serviço foi realizado (obrigatório)</td></tr>
+                                <tr><td>notes</td><td>TEXT</td><td>Observações sobre o agendamento</td></tr>
+                                <tr><td>status</td><td>TEXT</td><td>Status do agendamento (scheduled, confirmed, canceled, completed, rejected)</td></tr>
                             </tbody>
                         </table>
 
                         <h4>Corpo da Requisição:</h4>
                         <pre><code>{
-  "cliente_id": "550e8400-e29b-41d4-a716-446655440000",
-  "atendente_id": "550e8400-e29b-41d4-a716-446655440001",
-  "data_agendamento": "2025-02-22T14:00:00.000Z",
-  "servico_realizado": false
+  "client_id": "550e8400-e29b-41d4-a716-446655440000",
+  "attendant_id": "550e8400-e29b-41d4-a716-446655440001",
+  "appointment_date": "2025-02-22T14:00:00.000Z",
+  "service_performed": false,
+  "notes": "Observações sobre o agendamento",
+  "status": "scheduled"
 }</code></pre>
                     </div>
                 </section>
 
                 <section id="especialidades">
-                    <h2>Especialidades</h2>
+                    <h2>Especialidades (Specialties)</h2>
                     
                     <div class="endpoint">
                         <span class="method post">POST</span>
-                        <code>/especialidades</code>
+                        <code>/specialties</code>
                         <h4>Estrutura da Tabela:</h4>
                         <table class="table table-bordered">
                             <thead>
@@ -357,26 +433,32 @@
                             </thead>
                             <tbody>
                                 <tr><td>id</td><td>UUID</td><td>Chave primária</td></tr>
-                                <tr><td>nome</td><td>TEXT</td><td>Nome da especialidade (obrigatório)</td></tr>
-                                <tr><td>descricao</td><td>TEXT</td><td>Descrição da especialidade (obrigatório)</td></tr>
-                                <tr><td>empresa_id</td><td>UUID</td><td>ID da empresa (default: UUID zero)</td></tr>
+                                <tr><td>name</td><td>TEXT</td><td>Nome da especialidade (obrigatório)</td></tr>
+                                <tr><td>description</td><td>TEXT</td><td>Descrição da especialidade (obrigatório)</td></tr>
+                                <tr><td>company_id</td><td>UUID</td><td>ID da empresa (default: UUID zero)</td></tr>
+                                <tr><td>duration</td><td>INTEGER</td><td>Duração em minutos</td></tr>
+                                <tr><td>price</td><td>DECIMAL</td><td>Preço do serviço</td></tr>
+                                <tr><td>active</td><td>BOOLEAN</td><td>Status da especialidade</td></tr>
                             </tbody>
                         </table>
 
                         <h4>Corpo da Requisição:</h4>
                         <pre><code>{
-  "nome": "Corte de Cabelo",
-  "descricao": "Corte masculino ou feminino"
+  "name": "Corte de Cabelo",
+  "description": "Corte masculino ou feminino",
+  "duration": 30,
+  "price": 50.00,
+  "active": true
 }</code></pre>
                     </div>
                 </section>
 
                 <section id="horarios">
-                    <h2>Horários</h2>
+                    <h2>Horários (Schedules)</h2>
                     
                     <div class="endpoint">
                         <span class="method post">POST</span>
-                        <code>/horarios</code>
+                        <code>/schedules</code>
                         <h4>Estrutura da Tabela:</h4>
                         <table class="table table-bordered">
                             <thead>
@@ -388,28 +470,28 @@
                             </thead>
                             <tbody>
                                 <tr><td>id</td><td>UUID</td><td>Chave primária</td></tr>
-                                <tr><td>atendente_id</td><td>UUID</td><td>ID do atendente (obrigatório)</td></tr>
-                                <tr><td>dia_semana</td><td>INTEGER</td><td>Dia da semana (0-6) (obrigatório)</td></tr>
-                                <tr><td>hora_inicio</td><td>TIME</td><td>Horário de início (obrigatório)</td></tr>
-                                <tr><td>hora_fim</td><td>TIME</td><td>Horário de término (obrigatório)</td></tr>
-                                <tr><td>ativo</td><td>BOOLEAN</td><td>Status do horário (default: true)</td></tr>
-                                <tr><td>empresa_id</td><td>UUID</td><td>ID da empresa (obrigatório)</td></tr>
+                                <tr><td>attendant_id</td><td>UUID</td><td>ID do atendente (obrigatório)</td></tr>
+                                <tr><td>day_of_week</td><td>INTEGER</td><td>Dia da semana (0-6) (obrigatório)</td></tr>
+                                <tr><td>start_time</td><td>TIME</td><td>Horário de início (obrigatório)</td></tr>
+                                <tr><td>end_time</td><td>TIME</td><td>Horário de término (obrigatório)</td></tr>
+                                <tr><td>active</td><td>BOOLEAN</td><td>Status do horário (default: true)</td></tr>
+                                <tr><td>company_id</td><td>UUID</td><td>ID da empresa (obrigatório)</td></tr>
                             </tbody>
                         </table>
 
                         <h4>Corpo da Requisição:</h4>
                         <pre><code>{
-  "atendente_id": "550e8400-e29b-41d4-a716-446655440000",
-  "dia_semana": 1,
-  "hora_inicio": "09:00",
-  "hora_fim": "18:00",
-  "ativo": true
+  "attendant_id": "550e8400-e29b-41d4-a716-446655440000",
+  "day_of_week": 1,
+  "start_time": "09:00",
+  "end_time": "18:00",
+  "active": true
 }</code></pre>
                     </div>
                 </section>
 
                 <section id="config">
-                    <h2>Configurações</h2>
+                    <h2>Configurações (Config)</h2>
                     
                     <div class="endpoint">
                         <h4>Estrutura da Tabela:</h4>
@@ -426,20 +508,25 @@
                                 <tr><td>logo_url</td><td>TEXT</td><td>URL do logo</td></tr>
                                 <tr><td>evolution_url</td><td>TEXT</td><td>URL do Evolution</td></tr>
                                 <tr><td>evolution_key</td><td>TEXT</td><td>Chave do Evolution</td></tr>
-                                <tr><td>evolution_instancia</td><td>TEXT</td><td>Instância do Evolution</td></tr>
+                                <tr><td>evolution_instance</td><td>TEXT</td><td>Instância do Evolution</td></tr>
                                 <tr><td>minio_bucket</td><td>TEXT</td><td>Nome do bucket Minio</td></tr>
                                 <tr><td>minio_port</td><td>TEXT</td><td>Porta do Minio</td></tr>
                                 <tr><td>minio_access_key</td><td>TEXT</td><td>Chave de acesso do Minio</td></tr>
                                 <tr><td>minio_secret_key</td><td>TEXT</td><td>Chave secreta do Minio</td></tr>
                                 <tr><td>minio_endpoint</td><td>TEXT</td><td>Endpoint do Minio</td></tr>
                                 <tr><td>email</td><td>TEXT</td><td>Email para envio de notificações</td></tr>
-                                <tr><td>email_senha</td><td>TEXT</td><td>Senha do email</td></tr>
+                                <tr><td>email_password</td><td>TEXT</td><td>Senha do email</td></tr>
                                 <tr><td>email_smtp</td><td>TEXT</td><td>Servidor SMTP</td></tr>
-                                <tr><td>email_porta</td><td>TEXT</td><td>Porta do servidor SMTP</td></tr>
-                                <tr><td>email_texto_agendado</td><td>TEXT</td><td>Texto para email de agendamento</td></tr>
-                                <tr><td>email_texto_cancelado</td><td>TEXT</td><td>Texto para email de cancelamento</td></tr>
-                                <tr><td>email_texto_confirmado</td><td>TEXT</td><td>Texto para email de confirmação</td></tr>
-                                <tr><td>email_texto_recusado</td><td>TEXT</td><td>Texto para email de recusa</td></tr>
+                                <tr><td>email_port</td><td>TEXT</td><td>Porta do servidor SMTP</td></tr>
+                                <tr><td>email_text_scheduled</td><td>TEXT</td><td>Texto para email de agendamento</td></tr>
+                                <tr><td>email_text_canceled</td><td>TEXT</td><td>Texto para email de cancelamento</td></tr>
+                                <tr><td>email_text_confirmed</td><td>TEXT</td><td>Texto para email de confirmação</td></tr>
+                                <tr><td>email_text_rejected</td><td>TEXT</td><td>Texto para email de recusa</td></tr>
+                                <tr><td>ai_provider</td><td>TEXT</td><td>Provedor de IA (openai, anthropic, google)</td></tr>
+                                <tr><td>ai_api_key</td><td>TEXT</td><td>Chave de API do provedor de IA</td></tr>
+                                <tr><td>ai_model</td><td>TEXT</td><td>Modelo específico de IA a ser usado</td></tr>
+                                <tr><td>ai_temperature</td><td>DECIMAL</td><td>Temperatura para controle de criatividade da IA (0-1)</td></tr>
+                                <tr><td>ai_prompt</td><td>TEXT</td><td>Prompt personalizado para processamento de agendamentos</td></tr>
                             </tbody>
                         </table>
 
@@ -466,20 +553,25 @@
   "logo_url": "https://exemplo.com/logo.png",
   "evolution_url": "https://evolution.exemplo.com",
   "evolution_key": "chave-evolution",
-  "evolution_instancia": "instancia-1",
+  "evolution_instance": "instancia-1",
   "minio_bucket": "meu-bucket",
   "minio_port": "9000",
   "minio_access_key": "access-key",
   "minio_secret_key": "secret-key",
   "minio_endpoint": "https://minio.exemplo.com",
   "email": "notificacoes@exemplo.com",
-  "email_senha": "senha-email",
+  "email_password": "senha-email",
   "email_smtp": "smtp.exemplo.com",
-  "email_porta": "587",
-  "email_texto_agendado": "Seu agendamento foi realizado com sucesso",
-  "email_texto_cancelado": "Seu agendamento foi cancelado",
-  "email_texto_confirmado": "Seu agendamento foi confirmado",
-  "email_texto_recusado": "Seu agendamento foi recusado"
+  "email_port": "587",
+  "email_text_scheduled": "Seu agendamento foi realizado com sucesso",
+  "email_text_canceled": "Seu agendamento foi cancelado",
+  "email_text_confirmed": "Seu agendamento foi confirmado",
+  "email_text_rejected": "Seu agendamento foi recusado",
+  "ai_provider": "openai",
+  "ai_api_key": "sk-sua-chave-api",
+  "ai_model": "gpt-3.5-turbo",
+  "ai_temperature": 0.7,
+  "ai_prompt": "Você é um assistente de agendamentos..."
 }</code></pre>
                         </div>
 
@@ -498,131 +590,277 @@
                     </div>
                 </section>
 
+                <section id="ai-config">
+                    <h2>Configurações de IA (AI Config)</h2>
+                    
+                    <div class="endpoint">
+                        <h4>Endpoints:</h4>
+
+                        <div class="mb-4">
+                            <span class="method get">GET</span>
+                            <code>/ai-config</code>
+                            <p>Obtém as configurações de IA da empresa atual.</p>
+                            <h5>Resposta:</h5>
+                            <pre><code>{
+  "provider": "openai",
+  "apiKey": "sk-***********", // Mascarada por segurança
+  "model": "gpt-3.5-turbo",
+  "temperature": 0.7,
+  "prompt": "Você é um assistente de agendamentos..."
+}</code></pre>
+                        </div>
+
+                        <div class="mb-4">
+                            <span class="method put">PUT</span>
+                            <code>/ai-config</code>
+                            <p>Atualiza as configurações de IA da empresa atual.</p>
+                            <h5>Corpo da Requisição:</h5>
+                            <pre><code>{
+  "provider": "openai",
+  "apiKey": "sk-sua-chave-api",
+  "model": "gpt-3.5-turbo",
+  "temperature": 0.7,
+  "prompt": "Você é um assistente de agendamentos..."
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="ai-integration">
+                    <h2>Integração com IA</h2>
+                    
+                    <p>
+                        A API Agendero oferece recursos avançados de integração com Inteligência Artificial para processamento
+                        de solicitações de agendamento e sugestões de horários.
+                    </p>
+                    
+                    <h3>Recursos de IA</h3>
+                    <p>
+                        A integração com IA permite:
+                    </p>
+                    <ul>
+                        <li>Processamento de solicitações de agendamento em linguagem natural</li>
+                        <li>Sugestão de horários disponíveis com base em preferências do cliente</li>
+                        <li>Análise de padrões de agendamento para otimização de horários</li>
+                        <li>Personalização da comunicação com clientes</li>
+                    </ul>
+                    
+                    <h3>Configuração da IA</h3>
+                    <p>
+                        Cada empresa pode configurar suas próprias preferências de IA através dos endpoints de <code>/ai-config</code>.
+                        As configurações incluem:
+                    </p>
+                    <ul>
+                        <li><strong>Provedor:</strong> OpenAI, Anthropic ou Google</li>
+                        <li><strong>Modelo:</strong> Modelo específico a ser utilizado (ex: GPT-3.5-Turbo, Claude, Gemini)</li>
+                        <li><strong>Temperatura:</strong> Controle de criatividade da IA (0-1)</li>
+                        <li><strong>Prompt:</strong> Instruções personalizadas para o processamento de agendamentos</li>
+                    </ul>
+                    
+                    <div class="endpoint">
+                        <h4>Endpoints de IA:</h4>
+
+                        <div class="mb-4">
+                            <span class="method post">POST</span>
+                            <code>/ai/process-request</code>
+                            <p>Processa uma solicitação de agendamento em linguagem natural.</p>
+                            <h5>Corpo da Requisição:</h5>
+                            <pre><code>{
+  "message": "Gostaria de agendar um corte de cabelo na próxima terça-feira à tarde com o João",
+  "client_id": "550e8400-e29b-41d4-a716-446655440000"
+}</code></pre>
+                            <h5>Resposta:</h5>
+                            <pre><code>{
+  "understood": true,
+  "service": "Corte de cabelo",
+  "attendant": "João",
+  "date": "2023-06-20",
+  "timePreference": "tarde",
+  "suggestedSlots": [
+    {
+      "date": "2023-06-20",
+      "time": "14:00",
+      "attendant_id": "550e8400-e29b-41d4-a716-446655440001"
+    },
+    {
+      "date": "2023-06-20",
+      "time": "16:30",
+      "attendant_id": "550e8400-e29b-41d4-a716-446655440001"
+    }
+  ]
+}</code></pre>
+                        </div>
+
+                        <div class="mb-4">
+                            <span class="method post">POST</span>
+                            <code>/ai/suggest-appointments</code>
+                            <p>Sugere horários disponíveis com base em critérios específicos.</p>
+                            <h5>Corpo da Requisição:</h5>
+                            <pre><code>{
+  "specialty_id": "550e8400-e29b-41d4-a716-446655440002",
+  "preferred_dates": ["2023-06-20", "2023-06-21", "2023-06-22"],
+  "preferred_time_range": {
+    "start": "13:00",
+    "end": "18:00"
+  },
+  "preferred_attendant_id": "550e8400-e29b-41d4-a716-446655440001" // Opcional
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
                 <section id="exemplos">
                     <h2>Exemplos de Uso</h2>
                     
-                    <h3>Exemplo no Postman</h3>
-                    <div class="code-block">
-                        <p>1. Criar uma empresa (não requer API key):</p>
-                        <pre><code>POST http://localhost:3002/empresas
-Content-Type: application/json
+                    <h3>Criação de uma Empresa</h3>
+                    <pre><code>curl -X POST "https://api.agendero.com/companies" \
+-H "Content-Type: application/json" \
+-d '{
+  "name": "Salão de Beleza Exemplo",
+  "activity": "Salão de Beleza",
+  "responsible": "Maria Silva",
+  "email": "contato@salaoexemplo.com",
+  "phone": "11999999999",
+  "cnpj": "12.345.678/0001-90",
+  "address_street": "Rua Exemplo",
+  "address_number": "123",
+  "address_neighborhood": "Centro",
+  "address_city": "São Paulo",
+  "address_state": "SP",
+  "address_zip": "01001-001",
+  "address_country": "Brasil"
+}'</code></pre>
 
-{
-  "nome": "Minha Empresa",
-  "atividade": "Barbearia",
-  "responsavel": "João Silva",
-  "telefone_celular": "11999999999",
-  "email": "contato@minhaempresa.com",
-  "endereco_rua": "Rua Principal",
-  "endereco_cidade": "São Paulo",
-  "endereco_estado": "SP",
-  "endereco_bairro": "Centro",
-  "endereco_cep": "01001-001",
-  "endereco_pais": "Brasil",
-  "endereco_complemento": "Sala 123",
-  "endereco_numero": "100",
-  "telefone_fixo": "1133333333",
-  "logo": "https://minha-empresa.com/logo.png",
-  "ativa": true
-}</code></pre>
-                        <p>Resposta de sucesso (copie a chave_api retornada):</p>
-                        <pre><code>{
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "nome": "Minha Empresa",
-  "chave_api": "12345678-1234-1234-1234-123456789012"
-}</code></pre>
+                    <h3>Listar Clientes</h3>
+                    <pre><code>curl -X GET "https://api.agendero.com/clients" \
+-H "x-api-key: sua-chave-api-aqui"</code></pre>
 
-                        <p>2. Criar um cliente (requer API key):</p>
-                        <pre><code>POST http://localhost:3002/clientes
-Content-Type: application/json
-x-api-key: 446AE6DD89E64F7F9D8964B595035644
+                    <h3>Criar um Agendamento</h3>
+                    <pre><code>curl -X POST "https://api.agendero.com/appointments" \
+-H "Content-Type: application/json" \
+-H "x-api-key: sua-chave-api-aqui" \
+-d '{
+  "client_id": "550e8400-e29b-41d4-a716-446655440000",
+  "attendant_id": "550e8400-e29b-41d4-a716-446655440001",
+  "appointment_date": "2023-06-20T14:00:00.000Z",
+  "service_performed": false,
+  "notes": "Cliente solicitou um corte curto",
+  "status": "scheduled"
+}'</code></pre>
 
-{
-  "nome": "Cliente Exemplo",
-  "cpf_cnpj": "123.456.789-00",
-  "data_nascimento": "1990-01-01",
-  "telefone_celular": "11999999999",
-  "email": "cliente@email.com",
-  "senha": "senha123",
-  "endereco_rua": "Rua do Cliente",
-  "endereco_cidade": "São Paulo",
-  "endereco_estado": "SP",
-  "endereco_bairro": "Centro",
-  "endereco_cep": "01001-001",
-  "endereco_pais": "Brasil",
-  "endereco_complemento": "Apto 123",
-  "endereco_numero": "456",
-  "observacoes": "Observações sobre o cliente",
-  "ativo": true
-}</code></pre>
+                    <h3>Obter Configurações de IA</h3>
+                    <pre><code>curl -X GET "https://api.agendero.com/ai-config" \
+-H "x-api-key: sua-chave-api-aqui"</code></pre>
 
-                        <p>3. Listar clientes (requer API key):</p>
-                        <pre><code>GET http://localhost:3002/clientes
-x-api-key: 446AE6DD89E64F7F9D8964B595035644</code></pre>
-
-                        <p>4. Criar um atendente (requer API key):</p>
-                        <pre><code>POST http://localhost:3002/atendentes
-Content-Type: application/json
-x-api-key: 446AE6DD89E64F7F9D8964B595035644
-
-{
-  "nome": "Atendente Exemplo",
-  "especialidade_id": "550e8400-e29b-41d4-a716-446655440000",
-  "telefone_celular": "11999999999",
-  "email": "atendente@email.com",
-  "data_contratacao": "2025-02-22T00:00:00.000Z",
-  "administrador": false
-}</code></pre>
-                    </div>
-
-                    <h3>Exemplo no n8n</h3>
-                    <ol>
-                        <li>Adicione um novo nó HTTP Request</li>
-                        <li>Configure o método (GET, POST, etc)</li>
-                        <li>Em Headers, adicione:
-                            <pre><code>x-api-key: 446AE6DD89E64F7F9D8964B595035644
-Content-Type: application/json</code></pre>
-                        </li>
-                        <li>Para POST/PUT, adicione o corpo da requisição em JSON</li>
-                    </ol>
-
-                    <h3>Exemplo no Typebot</h3>
-                    <ol>
-                        <li>Use o bloco "HTTP Request"</li>
-                        <li>Adicione a URL completa</li>
-                        <li>Configure o método</li>
-                        <li>Em Headers, adicione:
-                            <pre><code>x-api-key: 446AE6DD89E64F7F9D8964B595035644
-Content-Type: application/json</code></pre>
-                        </li>
-                        <li>Para POST/PUT, adicione o corpo em JSON</li>
-                    </ol>
+                    <h3>Processar Solicitação de Agendamento com IA</h3>
+                    <pre><code>curl -X POST "https://api.agendero.com/ai/process-request" \
+-H "Content-Type: application/json" \
+-H "x-api-key: sua-chave-api-aqui" \
+-d '{
+  "message": "Gostaria de agendar um corte de cabelo na próxima terça-feira à tarde",
+  "client_id": "550e8400-e29b-41d4-a716-446655440000"
+}'</code></pre>
                 </section>
 
                 <section id="erros">
-                    <h2>Códigos de Erro</h2>
-                    <ul class="list-group">
-                        <li class="list-group-item">200: Sucesso</li>
-                        <li class="list-group-item">201: Criado com sucesso</li>
-                        <li class="list-group-item">400: Erro de validação ou dados inválidos</li>
-                        <li class="list-group-item">401: Não autorizado (API Key inválida ou ausente)</li>
-                        <li class="list-group-item">404: Recurso não encontrado</li>
-                        <li class="list-group-item">409: Conflito (ex: tentar criar uma segunda empresa)</li>
-                        <li class="list-group-item">500: Erro interno do servidor</li>
-                    </ul>
+                    <h2>Erros</h2>
+                    <p>A API utiliza códigos de status HTTP padrão para indicar o sucesso ou falha de uma requisição.</p>
+                    
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Descrição</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>200 - OK</td>
+                                <td>A requisição foi bem-sucedida.</td>
+                            </tr>
+                            <tr>
+                                <td>201 - Created</td>
+                                <td>O recurso foi criado com sucesso.</td>
+                            </tr>
+                            <tr>
+                                <td>400 - Bad Request</td>
+                                <td>A requisição contém dados inválidos ou está mal formatada.</td>
+                            </tr>
+                            <tr>
+                                <td>401 - Unauthorized</td>
+                                <td>Autenticação falhou. A chave de API não foi fornecida ou é inválida.</td>
+                            </tr>
+                            <tr>
+                                <td>403 - Forbidden</td>
+                                <td>O cliente não tem permissão para acessar o recurso solicitado.</td>
+                            </tr>
+                            <tr>
+                                <td>404 - Not Found</td>
+                                <td>O recurso solicitado não foi encontrado.</td>
+                            </tr>
+                            <tr>
+                                <td>409 - Conflict</td>
+                                <td>A requisição não pôde ser concluída devido a um conflito com o estado atual do recurso.</td>
+                            </tr>
+                            <tr>
+                                <td>422 - Unprocessable Entity</td>
+                                <td>A requisição foi bem formatada, mas contém dados inválidos ou faltantes.</td>
+                            </tr>
+                            <tr>
+                                <td>500 - Internal Server Error</td>
+                                <td>Ocorreu um erro no servidor ao processar a requisição.</td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-                    <h3>Exemplos de Erros</h3>
+                    <h3>Erros Específicos</h3>
+                    <p>Além dos códigos de status HTTP, a API retorna mensagens de erro detalhadas no corpo da resposta:</p>
+                    
                     <pre><code>{
-  "error": "API Key não fornecida"
-}
-
-{
-  "error": "Cliente não encontrado"
-}
-
-{
-  "error": "Já existe uma empresa cadastrada"
+  "error": true,
+  "message": "Descrição detalhada do erro",
+  "code": "ERRO_CODIGO"
 }</code></pre>
+
+                    <h3>Códigos de Erro Comuns</h3>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Descrição</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>INVALID_API_KEY</td>
+                                <td>A chave de API fornecida é inválida ou não foi encontrada.</td>
+                            </tr>
+                            <tr>
+                                <td>MISSING_API_KEY</td>
+                                <td>A chave de API não foi fornecida no cabeçalho da requisição.</td>
+                            </tr>
+                            <tr>
+                                <td>DATA_ISOLATION_ERROR</td>
+                                <td>Tentativa de acessar dados que não pertencem à empresa do usuário autenticado.</td>
+                            </tr>
+                            <tr>
+                                <td>VALIDATION_ERROR</td>
+                                <td>Os dados fornecidos não passaram na validação.</td>
+                            </tr>
+                            <tr>
+                                <td>RESOURCE_NOT_FOUND</td>
+                                <td>O recurso solicitado não foi encontrado.</td>
+                            </tr>
+                            <tr>
+                                <td>DUPLICATE_ENTRY</td>
+                                <td>Tentativa de criar um recurso que já existe.</td>
+                            </tr>
+                            <tr>
+                                <td>AI_CONFIG_ERROR</td>
+                                <td>Erro nas configurações de IA ou na comunicação com o provedor de IA.</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </section>
             </main>
         </div>

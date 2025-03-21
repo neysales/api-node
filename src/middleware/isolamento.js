@@ -1,24 +1,24 @@
 /**
- * Middleware para isolamento de dados em um sistema multi-tenant
- * Adiciona automaticamente o filtro de empresa_id em todas as requisições
+ * Data isolation middleware for multi-tenant system
+ * Automatically adds company filtering to all requests
  */
 
 const isolamentoDados = (req, res, next) => {
-  // Verifica se a empresa foi definida pelo middleware apiKeyAuth
-  if (!req.company || !req.company.id) {
+  // Check if company was set by apiKeyAuth middleware
+  if (!req.empresa || !req.empresa.id) {
     return res.status(401).json({ 
-      error: 'Acesso não autorizado. Identificação da empresa não encontrada.' 
+      error: 'Unauthorized access. Company identification not found.' 
     });
   }
 
-  // Adiciona o filtro de empresa ao objeto de requisição
-  req.filtroEmpresa = { empresa_id: req.company.id };
+  // Add company filter to request object
+  req.companyFilter = { company_id: req.empresa.id };
   
-  // Adiciona o ID da empresa como propriedade separada para facilitar o acesso
-  req.empresaId = req.company.id;
+  // Add company ID as separate property for easier access
+  req.companyId = req.empresa.id;
   
-  // Log para depuração (opcional, pode ser removido em produção)
-  console.log(`Acesso autorizado para empresa ID: ${req.company.id}`);
+  // Debug logging (optional, can be removed in production)
+  console.log(`Authorized access for Company ID: ${req.empresa.id}`);
   
   next();
 };

@@ -1,38 +1,46 @@
 const express = require('express');
 const router = express.Router();
-const { sequelize } = require('../../models');
+const { Company } = require('../../models');
 
 /**
- * Rota para verificar se existem empresas ativas
- * Esta rota não requer autenticação, pois é usada para verificar se há empresas cadastradas
+ * Route to check if any companies exist
+ * This route doesn't require authentication as it's used during initial setup
  */
 router.get('/', async (req, res) => {
   try {
-    const [empresas] = await sequelize.query(
-      `SELECT id, nome, chave_api FROM empresas WHERE ativa = true LIMIT 1`
-    );
+    console.log('Checking for active companies...');
     
-    if (empresas.length === 0) {
+    const company = await Company.findOne({
+      where: { 
+        active: true 
+      },
+      attributes: ['id', 'name', 'api_key']
+    });
+    
+    if (!company) {
+      console.log('No active companies found');
       return res.status(404).json({ 
         success: false, 
-        message: 'Nenhuma empresa ativa encontrada' 
+        message: 'No active companies found' 
       });
     }
     
+    console.log('Active company found:', company.id);
+    
     res.json({ 
       success: true, 
-      message: 'Empresa ativa encontrada',
+      message: 'Active company found',
       company: {
-        id: empresas[0].id,
-        name: empresas[0].nome,
-        apiKey: empresas[0].chave_api
+        id: company.id,
+        name: company.name,
+        apiKey: company.api_key
       }
     });
   } catch (error) {
-    console.error('Erro ao verificar empresas:', error);
+    console.error('Error checking companies:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Erro ao verificar empresas: ' + error.message 
+      message: 'Error checking companies: ' + error.message 
     });
   }
 });

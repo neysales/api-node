@@ -1,15 +1,24 @@
 const express = require('express');
 const router = express.Router();
-const authMiddleware = require('../middleware/auth');
-const agendamentoController = require('../controllers/agendamentoController');
+const appointmentController = require('../controllers/agendamentoController');
+const { apiKeyAuth } = require('../middleware/auth');
+const { isolamentoDados } = require('../middleware/isolamento');
 
-// Por enquanto, vamos criar rotas básicas que retornam 501 (Not Implemented)
-router.use(authMiddleware);
+// Apply middlewares
+router.use(apiKeyAuth);
+router.use(isolamentoDados);
 
-router.get('/', agendamentoController.getAllAgendamentos);
-router.get('/:id', agendamentoController.getAgendamentoById);
-router.post('/', agendamentoController.createAgendamento);
-router.put('/:id', agendamentoController.updateAgendamento);
-router.delete('/:id', agendamentoController.deleteAgendamento);
+// Appointment routes
+router.get('/', appointmentController.getAllAgendamentos);
+router.get('/:id', appointmentController.getAgendamentoById);
+router.post('/', appointmentController.createAgendamento);
+router.put('/:id', appointmentController.updateAgendamento);
+router.delete('/:id', appointmentController.deleteAgendamento);
+
+// Additional status update routes
+router.put('/:id/perform', appointmentController.performService);
+router.put('/:id/cancel', appointmentController.cancelAppointment);
+router.put('/:id/confirm', appointmentController.confirmAppointment);
+router.put('/:id/reject', appointmentController.rejectAppointment);
 
 module.exports = router;

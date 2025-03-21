@@ -1,26 +1,32 @@
 /**
- * Rotas para gerenciar configurações de IA específicas para cada empresa
+ * Routes to manage AI configuration settings for each company
  */
 
 const express = require('express');
 const router = express.Router();
 const aiConfigController = require('../controllers/aiConfigController');
+const { apiKeyAuth } = require('../middleware/auth');
+const { isolamentoDados } = require('../middleware/isolamento');
+
+// Apply middlewares
+router.use(apiKeyAuth);
+router.use(isolamentoDados);
 
 /**
  * @swagger
  * /api/ai-config:
  *   get:
- *     summary: Obtém as configurações de IA da empresa atual
- *     tags: [Configurações de IA]
+ *     summary: Get current company's AI configuration
+ *     tags: [AI Configuration]
  *     security:
  *       - ApiKeyAuth: []
  *     responses:
  *       200:
- *         description: Configurações de IA obtidas com sucesso
+ *         description: AI configuration retrieved successfully
  *       401:
- *         description: Não autorizado
+ *         description: Unauthorized
  *       500:
- *         description: Erro interno do servidor
+ *         description: Internal server error
  */
 router.get('/', aiConfigController.getAIConfig);
 
@@ -28,8 +34,8 @@ router.get('/', aiConfigController.getAIConfig);
  * @swagger
  * /api/ai-config:
  *   put:
- *     summary: Atualiza as configurações de IA da empresa atual
- *     tags: [Configurações de IA]
+ *     summary: Update current company's AI configuration
+ *     tags: [AI Configuration]
  *     security:
  *       - ApiKeyAuth: []
  *     requestBody:
@@ -41,33 +47,33 @@ router.get('/', aiConfigController.getAIConfig);
  *             properties:
  *               provider:
  *                 type: string
- *                 description: Provedor de IA (openai, anthropic, google)
+ *                 description: AI provider (openai, anthropic, google)
  *                 example: openai
- *               apiKey:
+ *               api_key:
  *                 type: string
- *                 description: Chave de API do provedor de IA
+ *                 description: AI provider's API key
  *                 example: sk-xxxxxxxxxxxxx
  *               model:
  *                 type: string
- *                 description: Modelo específico a ser usado
+ *                 description: Specific model to be used
  *                 example: gpt-3.5-turbo
  *               temperature:
  *                 type: number
- *                 description: Temperatura para controle de criatividade (0 a 1)
+ *                 description: Temperature for creativity control (0 to 1)
  *                 example: 0.7
  *               prompt:
  *                 type: string
- *                 description: Prompt personalizado para processamento de agendamentos
- *                 example: "Você é um assistente especializado em interpretar solicitações de agendamento..."
+ *                 description: Custom prompt for appointment processing
+ *                 example: "You are an assistant specialized in interpreting scheduling requests..."
  *     responses:
  *       200:
- *         description: Configurações de IA atualizadas com sucesso
+ *         description: AI configuration updated successfully
  *       400:
- *         description: Dados inválidos
+ *         description: Invalid data
  *       401:
- *         description: Não autorizado
+ *         description: Unauthorized
  *       500:
- *         description: Erro interno do servidor
+ *         description: Internal server error
  */
 router.put('/', aiConfigController.updateAIConfig);
 

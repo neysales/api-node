@@ -9,7 +9,7 @@ async function initializeDatabase() {
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || '984011c5ca123ee9060092a2af946367',
     port: process.env.DB_PORT || 5432,
-    database: 'agenda'
+    database: 'agendero'
   });
 
   try {

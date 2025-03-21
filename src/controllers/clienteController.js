@@ -1,14 +1,15 @@
-const { Customer, Company } = require('../models');
+const { Client, Company } = require('../models');
+const { v4: uuidv4 } = require('uuid');
 
 const getAllClientes = async (req, res) => {
   try {
-    const empresa = await Company.findOne({ where: { apiKey: req.headers['x-api-key'] } });
+    const empresa = await Company.findOne({ where: { api_key: req.headers['x-api-key'] } });
     if (!empresa) {
       return res.status(401).json({ error: 'Empresa não autorizada' });
     }
 
-    const clientes = await Customer.findAll({
-      where: { companyId: empresa.id }
+    const clientes = await Client.findAll({
+      where: { company_id: empresa.id }
     });
     
     return res.json(clientes);
@@ -20,15 +21,15 @@ const getAllClientes = async (req, res) => {
 
 const getClienteById = async (req, res) => {
   try {
-    const empresa = await Company.findOne({ where: { apiKey: req.headers['x-api-key'] } });
+    const empresa = await Company.findOne({ where: { api_key: req.headers['x-api-key'] } });
     if (!empresa) {
       return res.status(401).json({ error: 'Empresa não autorizada' });
     }
 
-    const cliente = await Customer.findOne({
+    const cliente = await Client.findOne({
       where: { 
         id: req.params.id,
-        companyId: empresa.id
+        company_id: empresa.id
       }
     });
 
@@ -45,17 +46,39 @@ const getClienteById = async (req, res) => {
 
 const createCliente = async (req, res) => {
   try {
-    const empresa = await Company.findOne({ where: { apiKey: req.headers['x-api-key'] } });
+    const empresa = await Company.findOne({ where: { api_key: req.headers['x-api-key'] } });
     if (!empresa) {
       return res.status(401).json({ error: 'Empresa não autorizada' });
     }
 
-    const novoCliente = await Customer.create({
+    const novoCliente = await Client.create({
+      id: uuidv4(),
       name: req.body.name,
-      mobileNumber: req.body.mobileNumber,
+      cpf_cnpj: req.body.cpf_cnpj,
+      birth_date: req.body.birth_date,
+      phone_mobile: req.body.phone_mobile,
       email: req.body.email,
-      companyId: empresa.id,
-      isActive: req.body.isActive !== undefined ? req.body.isActive : true
+      address_street: req.body.address_street,
+      address_city: req.body.address_city,
+      address_state: req.body.address_state,
+      address_neighborhood: req.body.address_neighborhood,
+      address_zip: req.body.address_zip,
+      address_country: req.body.address_country,
+      address_complement: req.body.address_complement,
+      address_number: req.body.address_number,
+      notes: req.body.notes,
+      password: req.body.password,
+      active: req.body.active !== undefined ? req.body.active : true,
+      registration_date: new Date()
+    });
+
+    // Criar relação cliente-empresa
+    await sequelize.query(`
+      INSERT INTO clients_companies (client_id, company_id, registration_date)
+      VALUES ($1, $2, CURRENT_TIMESTAMP)
+    `, {
+      bind: [novoCliente.id, empresa.id],
+      type: sequelize.QueryTypes.INSERT
     });
 
     return res.status(201).json(novoCliente);
@@ -67,15 +90,15 @@ const createCliente = async (req, res) => {
 
 const updateCliente = async (req, res) => {
   try {
-    const empresa = await Company.findOne({ where: { apiKey: req.headers['x-api-key'] } });
+    const empresa = await Company.findOne({ where: { api_key: req.headers['x-api-key'] } });
     if (!empresa) {
       return res.status(401).json({ error: 'Empresa não autorizada' });
     }
 
-    const cliente = await Customer.findOne({
+    const cliente = await Client.findOne({
       where: { 
         id: req.params.id,
-        companyId: empresa.id
+        company_id: empresa.id
       }
     });
     
@@ -85,9 +108,21 @@ const updateCliente = async (req, res) => {
     
     await cliente.update({
       name: req.body.name || cliente.name,
-      mobileNumber: req.body.mobileNumber || cliente.mobileNumber,
+      cpf_cnpj: req.body.cpf_cnpj || cliente.cpf_cnpj,
+      birth_date: req.body.birth_date || cliente.birth_date,
+      phone_mobile: req.body.phone_mobile || cliente.phone_mobile,
       email: req.body.email || cliente.email,
-      isActive: req.body.isActive !== undefined ? req.body.isActive : cliente.isActive
+      address_street: req.body.address_street || cliente.address_street,
+      address_city: req.body.address_city || cliente.address_city,
+      address_state: req.body.address_state || cliente.address_state,
+      address_neighborhood: req.body.address_neighborhood || cliente.address_neighborhood,
+      address_zip: req.body.address_zip || cliente.address_zip,
+      address_country: req.body.address_country || cliente.address_country,
+      address_complement: req.body.address_complement || cliente.address_complement,
+      address_number: req.body.address_number || cliente.address_number,
+      notes: req.body.notes || cliente.notes,
+      password: req.body.password || cliente.password,
+      active: req.body.active !== undefined ? req.body.active : cliente.active
     });
     
     return res.json(cliente);
@@ -99,21 +134,30 @@ const updateCliente = async (req, res) => {
 
 const deleteCliente = async (req, res) => {
   try {
-    const empresa = await Company.findOne({ where: { apiKey: req.headers['x-api-key'] } });
+    const empresa = await Company.findOne({ where: { api_key: req.headers['x-api-key'] } });
     if (!empresa) {
       return res.status(401).json({ error: 'Empresa não autorizada' });
     }
 
-    const cliente = await Customer.findOne({
+    const cliente = await Client.findOne({
       where: { 
         id: req.params.id,
-        companyId: empresa.id
+        company_id: empresa.id
       }
     });
     
     if (!cliente) {
       return res.status(404).json({ error: 'Cliente não encontrado' });
     }
+    
+    // Remover relação cliente-empresa primeiro
+    await sequelize.query(`
+      DELETE FROM clients_companies 
+      WHERE client_id = $1 AND company_id = $2
+    `, {
+      bind: [cliente.id, empresa.id],
+      type: sequelize.QueryTypes.DELETE
+    });
     
     await cliente.destroy();
     

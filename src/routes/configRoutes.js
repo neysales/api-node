@@ -13,85 +13,77 @@ const ConfigController = require('../controllers/configController');
  *         id:
  *           type: string
  *           format: uuid
- *           description: ID único da configuração
- *         empresa_id:
+ *           description: Unique configuration ID
+ *         company_id:
  *           type: string
  *           format: uuid
- *           description: ID da empresa
+ *           description: Company ID
  *         logo_url:
  *           type: string
- *           description: URL do logo da empresa
+ *           description: Company logo URL
  *         evolution_url:
  *           type: string
- *           description: URL da API Evolution
+ *           description: Evolution API URL
  *         evolution_key:
  *           type: string
- *           description: Chave da API Evolution
- *         evolution_instancia:
+ *           description: Evolution API key
+ *         evolution_instance:
  *           type: string
- *           description: Instância da API Evolution
+ *           description: Evolution API instance
  *         minio_bucket:
  *           type: string
- *           description: Bucket do MinIO
+ *           description: MinIO bucket name
  *         minio_port:
  *           type: string
- *           description: Porta do MinIO
+ *           description: MinIO port
  *         minio_access_key:
  *           type: string
- *           description: Chave de acesso do MinIO
+ *           description: MinIO access key
  *         minio_secret_key:
  *           type: string
- *           description: Chave secreta do MinIO
+ *           description: MinIO secret key
  *         minio_endpoint:
  *           type: string
- *           description: Endpoint do MinIO
+ *           description: MinIO endpoint
  *         email:
  *           type: string
- *           description: E-mail para envio de notificações
- *         email_senha:
+ *           description: Notification email address
+ *         email_password:
  *           type: string
- *           description: Senha do e-mail
+ *           description: Email password
  *         email_smtp:
  *           type: string
- *           description: Servidor SMTP
- *         email_porta:
+ *           description: SMTP server
+ *         email_port:
  *           type: string
- *           description: Porta do servidor SMTP
- *         email_texto_agendado:
+ *           description: SMTP server port
+ *         email_text_scheduled:
  *           type: string
- *           description: Texto para e-mail de agendamento
- *         email_texto_cancelado:
+ *           description: Scheduling email template
+ *         email_text_canceled:
  *           type: string
- *           description: Texto para e-mail de cancelamento
- *         email_texto_confirmado:
+ *           description: Cancellation email template
+ *         email_text_confirmed:
  *           type: string
- *           description: Texto para e-mail de confirmação
- *         email_texto_recusado:
+ *           description: Confirmation email template
+ *         email_text_rejected:
  *           type: string
- *           description: Texto para e-mail de recusa
- *         data_cadastro:
+ *           description: Rejection email template
+ *         registration_date:
  *           type: string
  *           format: date-time
- *           description: Data de cadastro da configuração
+ *           description: Configuration registration date
  */
 
 /**
  * @swagger
  * /config/api-key:
  *   get:
- *     summary: Get the API key from environment
+ *     summary: Get API key from environment
  *     tags: [Config]
  *     responses:
  *       200:
  *         description: API key returned successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 apiKey:
- *                   type: string
- *                   description: Environment API key
  */
 router.get('/api-key', (req, res) => {
   const apiKey = process.env.Authentication__ApiKey || '';
@@ -131,7 +123,7 @@ router.get('/company', apiKeyAuth, async (req, res) => {
  * @swagger
  * /config:
  *   get:
- *     summary: Lista todas as configurações
+ *     summary: List all configurations
  *     tags: [Config]
  *     security:
  *       - ApiKeyAuth: []
@@ -147,13 +139,13 @@ router.get('/company', apiKeyAuth, async (req, res) => {
  *       500:
  *         description: Erro interno do servidor
  */
-router.get('/', apiKeyAuth, ConfigController.getAll);
+router.get('/', apiKeyAuth, ConfigController.getConfig);
 
 /**
  * @swagger
  * /config/{id}:
  *   get:
- *     summary: Obtém uma configuração pelo ID
+ *     summary: Get configuration by ID
  *     tags: [Config]
  *     security:
  *       - ApiKeyAuth: []
@@ -176,13 +168,13 @@ router.get('/', apiKeyAuth, ConfigController.getAll);
  *       500:
  *         description: Erro interno do servidor
  */
-router.get('/:id', apiKeyAuth, ConfigController.getById);
+router.get('/:id', apiKeyAuth, ConfigController.getConfig);
 
 /**
  * @swagger
  * /config:
  *   post:
- *     summary: Cria uma nova configuração
+ *     summary: Create new configuration
  *     tags: [Config]
  *     security:
  *       - ApiKeyAuth: []
@@ -202,13 +194,13 @@ router.get('/:id', apiKeyAuth, ConfigController.getById);
  *       500:
  *         description: Erro interno do servidor
  */
-router.post('/', apiKeyAuth, ConfigController.create);
+router.post('/', apiKeyAuth, ConfigController.createConfig);
 
 /**
  * @swagger
  * /config/{id}:
  *   put:
- *     summary: Atualiza uma configuração existente
+ *     summary: Update existing configuration
  *     tags: [Config]
  *     security:
  *       - ApiKeyAuth: []
@@ -237,13 +229,13 @@ router.post('/', apiKeyAuth, ConfigController.create);
  *       500:
  *         description: Erro interno do servidor
  */
-router.put('/:id', apiKeyAuth, ConfigController.update);
+router.put('/:id', apiKeyAuth, ConfigController.updateConfig);
 
 /**
  * @swagger
  * /config/{id}:
  *   delete:
- *     summary: Remove uma configuração
+ *     summary: Delete configuration
  *     tags: [Config]
  *     security:
  *       - ApiKeyAuth: []
@@ -262,6 +254,6 @@ router.put('/:id', apiKeyAuth, ConfigController.update);
  *       500:
  *         description: Erro interno do servidor
  */
-router.delete('/:id', apiKeyAuth, ConfigController.delete);
+router.delete('/:id', apiKeyAuth, ConfigController.deleteConfig);
 
 module.exports = router;

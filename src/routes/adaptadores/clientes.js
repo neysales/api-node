@@ -1,228 +1,155 @@
 const express = require('express');
 const router = express.Router();
-const { sequelize } = require('../../models');
+const { Client, Company } = require('../../models');
 const { apiKeyAuth } = require('../../middleware/auth');
+const { dataIsolation } = require('../../middleware/isolation');
 
-// Todas as rotas requerem autenticação
+// Apply middlewares
 router.use(apiKeyAuth);
+router.use(dataIsolation);
 
 /**
- * Rota para listar todos os clientes da empresa
+ * @swagger
+ * /api/adapters/clients:
+ *   get:
+ *     summary: List all clients for company
+ *     tags: [Legacy Adapters]
+ *     security:
+ *       - ApiKeyAuth: []
  */
 router.get('/', async (req, res) => {
   try {
-    const [clientes] = await sequelize.query(
-      `SELECT c.* FROM clientes c
-       INNER JOIN clientes_empresas ce ON c.id = ce.cliente_id
-       WHERE ce.empresa_id = :empresaId`,
-      {
-        replacements: { empresaId: req.company.id },
-        type: sequelize.QueryTypes.SELECT
-      }
-    );
-    res.json(clientes);
+    const clients = await Client.findAll({
+      include: [{
+        model: Company,
+        where: { id: req.company.id },
+        attributes: []
+      }]
+    });
+    res.json(clients);
   } catch (error) {
-    console.error('Erro ao listar clientes:', error);
-    res.status(500).json({ error: 'Erro ao listar clientes: ' + error.message });
+    console.error('Error listing clients:', error);
+    res.status(500).json({ error: 'Error listing clients: ' + error.message });
   }
 });
 
 /**
- * Rota para obter um cliente pelo ID
+ * @swagger
+ * /api/adapters/clients/{id}:
+ *   get:
+ *     summary: Get client by ID
  */
 router.get('/:id', async (req, res) => {
   try {
-    const [clientes] = await sequelize.query(
-      `SELECT c.* FROM clientes c
-       INNER JOIN clientes_empresas ce ON c.id = ce.cliente_id
-       WHERE c.id = :id AND ce.empresa_id = :empresaId`,
-      {
-        replacements: { 
-          id: req.params.id,
-          empresaId: req.company.id 
-        },
-        type: sequelize.QueryTypes.SELECT
-      }
-    );
+    const client = await Client.findOne({
+      where: { id: req.params.id },
+      include: [{
+        model: Company,
+        where: { id: req.company.id },
+        attributes: []
+      }]
+    });
     
-    if (clientes.length === 0) {
-      return res.status(404).json({ error: 'Cliente não encontrado' });
+    if (!client) {
+      return res.status(404).json({ error: 'Client not found' });
     }
     
-    res.json(clientes[0]);
+    res.json(client);
   } catch (error) {
-    console.error('Erro ao buscar cliente:', error);
-    res.status(500).json({ error: 'Erro ao buscar cliente: ' + error.message });
+    console.error('Error fetching client:', error);
+    res.status(500).json({ error: 'Error fetching client: ' + error.message });
   }
 });
 
 /**
- * Rota para criar um novo cliente
+ * @swagger
+ * /api/adapters/clients:
+ *   post:
+ *     summary: Create new client
  */
 router.post('/', async (req, res) => {
   try {
-    // Validar campos obrigatórios
-    if (!req.body.nome || req.body.nome.trim() === '') {
-      return res.status(400).json({ error: 'Nome não pode ser vazio' });
+    if (!req.body.name?.trim()) {
+      return res.status(400).json({ error: 'Name cannot be empty' });
     }
 
-    const query = `
-      INSERT INTO clientes (
-        id,
-        nome, 
-        telefone_celular, 
-        email, 
-        data_cadastro,
-        senha,
-        ativo
-      ) VALUES (
-        uuid_generate_v4(),
-        :nome, 
-        :telefone, 
-        :email, 
-        NOW(),
-        :senha,
-        true
-      ) RETURNING *;
-    `;
+    const client = await Client.create({
+      name: req.body.name,
+      phone_mobile: req.body.phone || '',
+      email: req.body.email || '',
+      password: req.body.password || '123456',
+      active: true
+    });
 
-    const [resultado] = await sequelize.query(query, {
-      replacements: {
-        nome: req.body.nome,
-        telefone: req.body.telefone || '',
-        email: req.body.email || '',
-        senha: req.body.senha || '123456' // senha padrão
-      },
-      type: sequelize.QueryTypes.INSERT
-    });
+    await client.addCompany(req.company.id);
     
-    if (resultado.length === 0) {
-      return res.status(500).json({ error: 'Erro ao criar cliente' });
-    }
-    
-    // Inserir relacionamento cliente-empresa
-    await sequelize.query(`
-      INSERT INTO clientes_empresas (
-        cliente_id, 
-        empresa_id
-      ) VALUES (
-        :clienteId, 
-        :empresaId
-      );
-    `, {
-      replacements: {
-        clienteId: resultado[0].id,
-        empresaId: req.company.id
-      },
-      type: sequelize.QueryTypes.INSERT
-    });
-    
-    res.status(201).json(resultado[0]);
+    res.status(201).json(client);
   } catch (error) {
-    console.error('Erro ao criar cliente:', error);
-    res.status(500).json({ error: 'Erro ao criar cliente: ' + error.message });
+    console.error('Error creating client:', error);
+    res.status(500).json({ error: 'Error creating client: ' + error.message });
   }
 });
 
 /**
- * Rota para atualizar um cliente
+ * @swagger
+ * /api/adapters/clients/{id}:
+ *   put:
+ *     summary: Update client
  */
 router.put('/:id', async (req, res) => {
   try {
-    // Verificar se o cliente existe
-    const [clientes] = await sequelize.query(
-      `SELECT c.* FROM clientes c
-       INNER JOIN clientes_empresas ce ON c.id = ce.cliente_id
-       WHERE c.id = :id AND ce.empresa_id = :empresaId`,
-      {
-        replacements: { 
-          id: req.params.id,
-          empresaId: req.company.id 
-        },
-        type: sequelize.QueryTypes.SELECT
-      }
-    );
-    
-    if (clientes.length === 0) {
-      return res.status(404).json({ error: 'Cliente não encontrado' });
-    }
-    
-    // Atualizar cliente
-    const [resultado] = await sequelize.query(`
-      UPDATE clientes SET
-        nome = :nome,
-        telefone_celular = :telefone,
-        email = :email
-      WHERE id = :id
-      RETURNING *;
-    `, {
-      replacements: {
-        nome: req.body.nome || clientes[0].nome,
-        telefone: req.body.telefone || clientes[0].telefone_celular,
-        email: req.body.email || clientes[0].email || '',
-        id: req.params.id
-      },
-      type: sequelize.QueryTypes.UPDATE
+    const client = await Client.findOne({
+      where: { id: req.params.id },
+      include: [{
+        model: Company,
+        where: { id: req.company.id }
+      }]
     });
     
-    res.json(resultado[0]);
+    if (!client) {
+      return res.status(404).json({ error: 'Client not found' });
+    }
+    
+    await client.update({
+      name: req.body.name || client.name,
+      phone_mobile: req.body.phone || client.phone_mobile,
+      email: req.body.email || client.email
+    });
+    
+    res.json(client);
   } catch (error) {
-    console.error('Erro ao atualizar cliente:', error);
-    res.status(500).json({ error: 'Erro ao atualizar cliente: ' + error.message });
+    console.error('Error updating client:', error);
+    res.status(500).json({ error: 'Error updating client: ' + error.message });
   }
 });
 
 /**
- * Rota para excluir um cliente
+ * @swagger
+ * /api/adapters/clients/{id}:
+ *   delete:
+ *     summary: Delete client
  */
 router.delete('/:id', async (req, res) => {
   try {
-    // Verificar se o cliente existe
-    const [clientes] = await sequelize.query(
-      `SELECT c.* FROM clientes c
-       INNER JOIN clientes_empresas ce ON c.id = ce.cliente_id
-       WHERE c.id = :id AND ce.empresa_id = :empresaId`,
-      {
-        replacements: { 
-          id: req.params.id,
-          empresaId: req.company.id 
-        },
-        type: sequelize.QueryTypes.SELECT
-      }
-    );
+    const client = await Client.findOne({
+      where: { id: req.params.id },
+      include: [{
+        model: Company,
+        where: { id: req.company.id }
+      }]
+    });
     
-    if (clientes.length === 0) {
-      return res.status(404).json({ error: 'Cliente não encontrado' });
+    if (!client) {
+      return res.status(404).json({ error: 'Client not found' });
     }
     
-    // Desativar cliente (exclusão lógica)
-    await sequelize.query(`
-      UPDATE clientes SET
-        data_atualizacao = NOW()
-      WHERE id = :id
-    `, {
-      replacements: {
-        id: req.params.id
-      },
-      type: sequelize.QueryTypes.UPDATE
-    });
-    
-    // Excluir relacionamento cliente-empresa
-    await sequelize.query(`
-      DELETE FROM clientes_empresas
-      WHERE cliente_id = :clienteId AND empresa_id = :empresaId;
-    `, {
-      replacements: {
-        clienteId: req.params.id,
-        empresaId: req.company.id
-      },
-      type: sequelize.QueryTypes.DELETE
-    });
+    await client.removeCompany(req.company.id);
+    await client.update({ active: false });
     
     res.status(204).send();
   } catch (error) {
-    console.error('Erro ao excluir cliente:', error);
-    res.status(500).json({ error: 'Erro ao excluir cliente: ' + error.message });
+    console.error('Error deleting client:', error);
+    res.status(500).json({ error: 'Error deleting client: ' + error.message });
   }
 });
 

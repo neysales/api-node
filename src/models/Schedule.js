@@ -5,52 +5,48 @@ module.exports = (sequelize, DataTypes) => {
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
-      defaultValue: DataTypes.UUIDV4,
-      field: 'id'
+      defaultValue: DataTypes.UUIDV4
     },
-    attendantId: {
+    attendant_id: {
       type: DataTypes.UUID,
       allowNull: false,
-      field: 'atendente_id',
       references: {
-        model: 'atendentes',
+        model: 'attendants',
         key: 'id'
       }
     },
-    dayOfWeek: {
+    day_of_week: {
       type: DataTypes.STRING(20),
-      allowNull: false,
-      field: 'dia_semana'
+      allowNull: false
     },
-    startTime: {
+    start_time: {
       type: DataTypes.TIME,
-      allowNull: false,
-      field: 'hora_inicio'
+      allowNull: false
     },
-    endTime: {
+    end_time: {
       type: DataTypes.TIME,
-      allowNull: false,
-      field: 'hora_fim'
+      allowNull: false
     },
-    isActive: {
+    active: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: true,
-      field: 'ativo'
+      defaultValue: true
     },
-    createdAt: {
+    registration_date: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW,
-      field: 'data_cadastro'
+      defaultValue: DataTypes.NOW
     }
   }, {
-    tableName: 'horarios',
+    tableName: 'schedules',
     timestamps: false
   });
 
   Schedule.associate = function(models) {
-    Schedule.belongsTo(models.Attendant, { foreignKey: 'atendente_id', as: 'atendente' });
+    Schedule.belongsTo(models.Attendant, {
+      foreignKey: 'attendant_id',
+      as: 'attendant'
+    });
   };
 
   return Schedule;

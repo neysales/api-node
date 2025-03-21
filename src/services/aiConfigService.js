@@ -1,113 +1,80 @@
 /**
- * Serviço para gerenciar configurações de IA específicas para cada empresa
- * Implementa o padrão multi-tenant para configurações de IA
+ * Service to manage AI configurations for each company
+ * Implements multi-tenant pattern for AI settings
  */
 
-const Config = require('../models/config');
-const { sequelize } = require('../models');
+const { Config } = require('../models');
 
 class AIConfigService {
     /**
-     * Obtém as configurações de IA para uma empresa específica
-     * @param {string} empresaId - ID da empresa
-     * @returns {Promise<Object>} Configurações de IA da empresa
+     * Get AI configuration for a specific company
+     * @param {string} companyId - Company ID
+     * @returns {Promise<Object>} Company's AI configuration
      */
-    static async getAIConfigForEmpresa(empresaId) {
+    static async getAIConfig(companyId) {
         try {
-            console.log(`Buscando configurações de IA para empresa ID: ${empresaId}`);
+            console.log(`Fetching AI configuration for Company ID: ${companyId}`);
             
-            // Buscar configurações da empresa no banco de dados
-            const config = await Config.getByEmpresaId(empresaId);
+            const config = await Config.findOne({
+                where: { company_id: companyId }
+            });
             
             if (!config) {
-                console.warn(`Configurações de IA não encontradas para empresa ${empresaId}`);
-                
-                // Buscar diretamente da tabela empresas como fallback
-                const empresas = await sequelize.query(
-                    `SELECT ai_provider, ai_api_key, ai_model FROM empresas WHERE id = $1`,
-                    {
-                        bind: [empresaId],
-                        type: sequelize.QueryTypes.SELECT
-                    }
-                );
-                
-                if (empresas && empresas.length > 0) {
-                    const empresa = empresas[0];
-                    console.log(`Usando configurações de IA da tabela empresas: ${JSON.stringify(empresa)}`);
-                    
-                    return {
-                        provider: empresa.ai_provider || 'openai',
-                        apiKey: empresa.ai_api_key || '',
-                        model: empresa.ai_model || 'gpt-3.5-turbo',
-                        temperature: 0.7,
-                        prompt: this.getDefaultPrompt()
-                    };
-                }
-                
+                console.warn(`AI configuration not found for company ${companyId}`);
                 return this.getDefaultAIConfig();
             }
             
-            console.log(`Configurações de IA encontradas: ${JSON.stringify(config)}`);
+            console.log(`AI configuration found: ${JSON.stringify(config)}`);
             
-            // Retornar as configurações de IA específicas da empresa
             return {
                 provider: config.ai_provider || 'openai',
                 apiKey: config.ai_api_key || '',
                 model: config.ai_model || 'gpt-3.5-turbo',
-                temperature: config.ai_temperature || 0.7,
-                prompt: config.ai_prompt || this.getDefaultPrompt()
+                temperature: 0.7,
+                prompt: this.getDefaultPrompt()
             };
         } catch (error) {
-            console.error('Erro ao obter configurações de IA:', error);
+            console.error('Error fetching AI configuration:', error);
             return this.getDefaultAIConfig();
         }
     }
     
     /**
-     * Atualiza as configurações de IA para uma empresa específica
-     * @param {string} empresaId - ID da empresa
-     * @param {Object} aiConfig - Novas configurações de IA
-     * @returns {Promise<Object>} Configurações atualizadas
+     * Update AI configuration for a specific company
+     * @param {string} companyId - Company ID
+     * @param {Object} aiConfig - New AI configuration
+     * @returns {Promise<Object>} Updated configuration
      */
-    static async updateAIConfigForEmpresa(empresaId, aiConfig) {
+    static async updateAIConfig(companyId, aiConfig) {
         try {
-            // Buscar configuração existente
-            let config = await Config.getByEmpresaId(empresaId);
+            let [config, created] = await Config.findOrCreate({
+                where: { company_id: companyId },
+                defaults: {
+                    ai_provider: 'openai',
+                    ai_model: 'gpt-3.5-turbo'
+                }
+            });
             
-            if (!config) {
-                throw new Error(`Configuração não encontrada para empresa ${empresaId}`);
-            }
-            
-            // Atualizar apenas os campos de IA
-            const updatedConfig = await Config.update(config.id, {
-                ...config,
+            const updatedConfig = await config.update({
                 ai_provider: aiConfig.provider,
                 ai_api_key: aiConfig.apiKey,
-                ai_model: aiConfig.model,
-                ai_temperature: aiConfig.temperature,
-                ai_prompt: aiConfig.prompt
+                ai_model: aiConfig.model
             });
             
             return {
                 provider: updatedConfig.ai_provider,
-                apiKey: updatedConfig.ai_api_key ? '********' : '', // Não retornar a chave real por segurança
-                model: updatedConfig.ai_model,
-                temperature: updatedConfig.ai_temperature,
-                prompt: updatedConfig.ai_prompt ? 
-                    (updatedConfig.ai_prompt.length > 50 ? 
-                        updatedConfig.ai_prompt.substring(0, 50) + '...' : 
-                        updatedConfig.ai_prompt) : 
-                    null
+                apiKey: updatedConfig.ai_api_key ? '********' : '',
+                model: updatedConfig.ai_model
             };
         } catch (error) {
-            console.error('Erro ao atualizar configurações de IA:', error);
+            console.error('Error updating AI configuration:', error);
             throw error;
         }
     }
     
     /**
-     * Retorna configurações padrão de IA
-     * @returns {Object} Configurações padrão
+     * Returns default AI configuration
+     * @returns {Object} Default configuration
      */
     static getDefaultAIConfig() {
         return {
@@ -120,33 +87,33 @@ class AIConfigService {
     }
     
     /**
-     * Retorna o prompt padrão para processamento de agendamentos
-     * @returns {string} Prompt padrão
+     * Returns default prompt for appointment processing
+     * @returns {string} Default prompt
      */
     static getDefaultPrompt() {
-        return `Você é um assistente especializado em interpretar solicitações de agendamento.
-O horário é relativo a data e hora atual: {DATA_HORA_ATUAL}.
-Analise a seguinte solicitação e extraia as informações relevantes:
-"{MENSAGEM}"
+        return `You are an assistant specialized in interpreting scheduling requests.
+The time is relative to current date and time: {CURRENT_DATETIME}.
+Analyze the following request and extract relevant information:
+"{MESSAGE}"
 
-IMPORTANTE: 
-1. Se o email do cliente não for fornecido na mensagem, retorne:
+IMPORTANT:
+1. If client email is not provided in the message, return:
 {
-    "sucesso": false,
-    "mensagem": "Por favor, informe o email do cliente para prosseguir com a solicitação."
+    "success": false,
+    "message": "Please provide client email to proceed with the request."
 }
-2. O atendente pode ser chamado de médico, médica, dr, dr., dra, dra., doutor, doutora, dentista, atendente, vendedor, vendedora, etc. Então remova esses prefixos do nome do atendente.
-3. Remova qualquer título profissional como "Dr.", "Dra.", "Prof.", "Sr.", "Sra.", "Srta.", entre outros.
-4. Caso contrário, retorne APENAS um objeto JSON válido com as seguintes informações, sem nenhum texto adicional ou formatação markdown:
+2. The attendant might be referred to as doctor, dr, dr., dentist, attendant, seller, etc. Remove these prefixes from the attendant name.
+3. Remove any professional titles like "Dr.", "Prof.", "Mr.", "Mrs.", "Ms.", etc.
+4. Otherwise, return ONLY a valid JSON object with the following information, without any additional text or markdown formatting:
 {
-    "acao": "agendar|cancelar|alterar|listar",
-    "nome_cliente": string,
-    "email_cliente": string,
-    "nome_atendente": string (opcional),
-    "data": string (YYYY-MM-DD),
-    "hora": string (HH:mm) (opcional)
+    "action": "schedule|cancel|change|list",
+    "client_name": string,
+    "client_email": string,
+    "attendant_name": string (optional),
+    "date": string (YYYY-MM-DD),
+    "time": string (HH:mm) (optional)
 }
-5. Caso não seja informada a data mas seja informado o horário, então use a data atual como base.`;
+5. If date is not provided but time is, use current date as base.`;
     }
 }
 

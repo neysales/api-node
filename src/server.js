@@ -6,65 +6,110 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const { sequelize } = require('./models');
 const path = require('path');
-const validarLicenca = require('./security/license');
+const validateLicense = require('./security/license');
 require('dotenv').config();
 
 const app = express();
 
-// Importar rotas
-const empresaRoutes = require('./routes/companies');
-const clienteRoutes = require('./routes/customers');
-const atendenteRoutes = require('./routes/attendants');
-const agendamentoRoutes = require('./routes/appointments');
-const especialidadeRoutes = require('./routes/specialties');
-const horarioRoutes = require('./routes/schedules');
+// Import routes
+const companyRoutes = require('./routes/empresaRoutes');
+const clientRoutes = require('./routes/clienteRoutes');
+const attendantRoutes = require('./routes/atendenteRoutes');
+const appointmentRoutes = require('./routes/agendamentoRoutes');
+const specialtyRoutes = require('./routes/especialidadeRoutes');
+const scheduleRoutes = require('./routes/horarioRoutes');
 const configRoutes = require('./routes/configRoutes');
-const aiAgendamentoRoutes = require('./routes/aiAgendamentoRoutes');
+const aiAppointmentRoutes = require('./routes/aiAgendamentoRoutes');
 const companyCheckRoutes = require('./routes/company-check');
 const aiConfigRoutes = require('./routes/aiConfigRoutes');
 
-// Importar adaptadores de rotas
-const empresaAdaptador = require('./routes/adaptadores/empresas');
-const clienteAdaptador = require('./routes/adaptadores/clientes');
-const companyCheckAdaptador = require('./routes/adaptadores/company-check');
-
-// Importar middlewares
+// Import middlewares
 const { apiKeyAuth } = require('./middleware/auth');
 const { isolamentoDados } = require('./middleware/isolamento');
 
-// Configuração do Swagger
+// Swagger Configuration
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'API de Agendamento',
+      title: 'API Agendero',
       version: '1.0.0',
-      description: 'API para sistema de agendamento de empresas',
+      description: 'API para sistema de agendamento com arquitetura multi-tenant',
+      contact: {
+        name: 'Suporte Agendero',
+        email: 'suporte@agendero.com.br',
+      },
     },
     servers: [
       {
-        url: process.env.NODE_ENV === 'production' 
-          ? 'https://agendaapi.agendero.com'
-          : 'http://localhost:3002',
-        description: process.env.NODE_ENV === 'production' ? 'Servidor de Produção' : 'Servidor Local'
-      }
+        url: 'http://localhost:3002',
+        description: 'Servidor de Desenvolvimento',
+      },
+      {
+        url: 'https://api.agendero.com.br',
+        description: 'Servidor de Produção',
+      },
     ],
     components: {
       securitySchemes: {
         ApiKeyAuth: {
           type: 'apiKey',
           in: 'header',
-          name: 'x-api-key'
-        }
-      }
-    }
+          name: 'x-api-key',
+          description: 'Chave de API específica para cada empresa',
+        },
+      },
+      schemas: require('./docs/swaggerSchemas'),
+    },
+    security: [
+      {
+        ApiKeyAuth: [],
+      },
+    ],
+    tags: [
+      {
+        name: 'Companies',
+        description: 'Operações relacionadas a empresas',
+      },
+      {
+        name: 'Clients',
+        description: 'Operações relacionadas a clientes',
+      },
+      {
+        name: 'Attendants',
+        description: 'Operações relacionadas a atendentes',
+      },
+      {
+        name: 'Specialties',
+        description: 'Operações relacionadas a especialidades',
+      },
+      {
+        name: 'Schedules',
+        description: 'Operações relacionadas a horários',
+      },
+      {
+        name: 'Appointments',
+        description: 'Operações relacionadas a agendamentos',
+      },
+      {
+        name: 'Config',
+        description: 'Operações relacionadas a configurações',
+      },
+      {
+        name: 'AI',
+        description: 'Operações relacionadas a inteligência artificial',
+      },
+    ],
   },
-  apis: [path.join(__dirname, 'routes', '*.js')],
+  apis: [
+    path.join(__dirname, 'routes', '*.js'),
+    path.join(__dirname, 'docs', 'swaggerSchemas.js')
+  ],
 };
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
 
-// Configuração do CORS
+// CORS Configuration
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -72,98 +117,91 @@ app.use(cors({
   credentials: true
 }));
 
-// Configuração do Helmet com ajustes para desenvolvimento
+// Helmet Configuration
 app.use(helmet({
   contentSecurityPolicy: false,
 }));
 
-// Configuração do Rate Limit
+// Rate Limit Configuration
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100 // limite de 100 requisições por windowMs
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit of 100 requests per windowMs
 });
 
 app.use(limiter);
 app.use(express.json());
-
-// Configurar para servir arquivos estáticos
 app.use(express.static('public'));
 
-// Configuração do Swagger UI
+// Swagger UI Configuration
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-// Rota para a documentação
+// Documentation route
 app.get('/docs', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/docs/index.html'));
 });
 
-// Registrar rotas
-// Usar adaptadores quando disponíveis, caso contrário usar as rotas originais
-// Importante: Rotas mais específicas devem vir antes das mais genéricas
+// Register routes
+// Public routes (no authentication required)
+app.use('/api/companies/check', companyCheckRoutes);
+app.use('/api/company-check', companyCheckRoutes);
 
-// Rotas públicas (não requerem autenticação)
-app.use('/api/companies/check', companyCheckAdaptador);
-app.use('/api/company-check', companyCheckAdaptador);
-
-// Rotas protegidas (requerem autenticação e isolamento de dados)
-app.use('/api/companies', apiKeyAuth, isolamentoDados, empresaAdaptador); 
-app.use('/api/empresas', apiKeyAuth, isolamentoDados, empresaAdaptador);
-app.use('/api/clientes', apiKeyAuth, isolamentoDados, clienteAdaptador);
-app.use('/api/customers', apiKeyAuth, isolamentoDados, clienteAdaptador); 
-app.use('/api/atendentes', apiKeyAuth, isolamentoDados, atendenteRoutes);
-app.use('/api/agendamentos', apiKeyAuth, isolamentoDados, agendamentoRoutes);
-app.use('/api/especialidades', apiKeyAuth, isolamentoDados, especialidadeRoutes);
-app.use('/api/horarios', apiKeyAuth, isolamentoDados, horarioRoutes);
+// Protected routes (require authentication and data isolation)
+app.use('/api/companies', apiKeyAuth, isolamentoDados, companyRoutes);
+app.use('/api/clients', apiKeyAuth, isolamentoDados, clientRoutes);
+app.use('/api/attendants', apiKeyAuth, isolamentoDados, attendantRoutes);
+app.use('/api/appointments', apiKeyAuth, isolamentoDados, appointmentRoutes);
+app.use('/api/specialties', apiKeyAuth, isolamentoDados, specialtyRoutes);
+app.use('/api/schedules', apiKeyAuth, isolamentoDados, scheduleRoutes);
 app.use('/api/config', apiKeyAuth, isolamentoDados, configRoutes);
-app.use('/api/ai-agendamento', apiKeyAuth, isolamentoDados, aiAgendamentoRoutes);
-app.use('/api/ai-config', apiKeyAuth, isolamentoDados, aiConfigRoutes);
+app.use('/api/ai/appointments', apiKeyAuth, isolamentoDados, aiAppointmentRoutes);
+app.use('/api/ai/config', apiKeyAuth, isolamentoDados, aiConfigRoutes);
 
-// Rota de teste para verificar se a API está funcionando
+// Health check route
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'API está funcionando!' });
+  res.json({ status: 'OK', message: 'API is running!' });
 });
 
 async function startServer() {
   try {
-    // Validar licença antes de iniciar o servidor
+    // Validate license before starting the server
     const licenseKey = process.env.LICENSE_KEY;
-    console.log('Validando licença...');
+    console.log('Validating license...');
     
     if (!licenseKey) {
-      console.error("\n=== ERRO DE LICENÇA ===");
-      console.error("Chave de licença não encontrada!");
-      console.error("Por favor, verifique se a variável LICENSE_KEY está definida no arquivo docker-compose.yml");
+      console.error("\n=== LICENSE ERROR ===");
+      console.error("License key not found!");
+      console.error("Please check if LICENSE_KEY is defined in docker-compose.yml");
       console.error("=====================================\n");
       process.exit(1);
     }
 
-    const licencaValida = await validarLicenca(licenseKey);
+    const isLicenseValid = await validateLicense(licenseKey);
     
-    if (!licencaValida) {
-      console.error("\n=== ERRO DE LICENÇA ===");
-      console.error("A aplicação não pode ser iniciada devido a um erro de licença.");
-      console.error("Por favor, verifique:");
-      console.error("1. Se você inseriu a chave de licença correta no arquivo docker-compose.yml");
-      console.error("2. Se sua conexão com a internet está funcionando");
-      console.error("3. Se o servidor de licenças está acessível");
-      console.error("\nSe o problema persistir, entre em contato com o suporte.");
+    if (!isLicenseValid) {
+      console.error("\n=== LICENSE ERROR ===");
+      console.error("The application cannot start due to a license error.");
+      console.error("Please check:");
+      console.error("1. If you entered the correct license key in docker-compose.yml");
+      console.error("2. If your internet connection is working");
+      console.error("3. If the license server is accessible");
+      console.error("\nIf the problem persists, contact support.");
       console.error("=====================================\n");
       process.exit(1);
     }
 
-    console.log('Licença validada com sucesso!');
-    console.log('Tentando conectar ao banco de dados...');
+    console.log('License validated successfully!');
+    console.log('Attempting to connect to database...');
     
     await sequelize.authenticate();
-    console.log('Conexão com o banco de dados estabelecida com sucesso.');
+    console.log('Database connection established successfully.');
 
     const PORT = process.env.PORT || 3002;
     app.listen(PORT, () => {
-      console.log(`Servidor rodando na porta ${PORT}`);
-      console.log(`Documentação Swagger disponível em http://localhost:${PORT}/api-docs`);
+      console.log(`Server running on port ${PORT}`);
+      console.log(`Swagger documentation available at http://localhost:${PORT}/api-docs`);
     });
   } catch (error) {
-    console.error('Erro ao iniciar o servidor:', error);
+    console.error('Error starting server:', error);
     process.exit(1);
   }
 }

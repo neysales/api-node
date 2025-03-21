@@ -27,7 +27,7 @@ services:
     environment:
       # Database Configuration
       # Format: Host=your_host;Database=your_database;Username=your_username;Password=your_password
-      - ConnectionStrings__PostgresConnection=Host=185.217.127.77;Port=5432;Database=agenda;Username=postgres;Password=984011c5ca123ee9060092a2af946367
+      - ConnectionStrings__PostgresConnection=Host=185.217.127.77;Port=5432;Database=agendero;Username=postgres;Password=984011c5ca123ee9060092a2af946367
           
       # License Key
       # Obtain from Agendero

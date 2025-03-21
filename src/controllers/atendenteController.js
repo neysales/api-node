@@ -1,13 +1,14 @@
 const { Attendant, Specialty } = require('../models');
+const { v4: uuidv4 } = require('uuid');
 
 const getAllAtendentes = async (req, res) => {
   try {
     const atendentes = await Attendant.findAll({
-      where: { companyId: req.empresa.id },
+      where: { company_id: req.empresa.id },
       include: [{
         model: Specialty,
-        as: 'especialidade',
-        attributes: ['nome', 'descricao']
+        as: 'specialty',
+        attributes: ['name', 'description']
       }]
     });
     
@@ -23,12 +24,12 @@ const getAtendenteById = async (req, res) => {
     const atendente = await Attendant.findOne({
       where: { 
         id: req.params.id,
-        companyId: req.empresa.id
+        company_id: req.empresa.id
       },
       include: [{
         model: Specialty,
-        as: 'especialidade',
-        attributes: ['nome', 'descricao']
+        as: 'specialty',
+        attributes: ['name', 'description']
       }]
     });
 
@@ -45,11 +46,10 @@ const getAtendenteById = async (req, res) => {
 
 const createAtendente = async (req, res) => {
   try {
-    // Verificar se a especialidade existe e pertence à empresa
     const especialidade = await Specialty.findOne({
       where: { 
-        id: req.body.specialtyId,
-        companyId: req.empresa.id
+        id: req.body.specialty_id,
+        company_id: req.empresa.id
       }
     });
 
@@ -58,13 +58,16 @@ const createAtendente = async (req, res) => {
     }
 
     const novoAtendente = await Attendant.create({
+      id: uuidv4(),
       name: req.body.name,
+      specialty_id: req.body.specialty_id,
+      company_id: req.empresa.id,
+      phone_mobile: req.body.phone_mobile,
       email: req.body.email,
-      phone: req.body.phone,
-      specialtyId: req.body.specialtyId,
-      companyId: req.empresa.id,
-      isActive: req.body.isActive !== undefined ? req.body.isActive : true,
-      createdAt: new Date()
+      hiring_date: req.body.hiring_date || new Date(),
+      administrator: req.body.administrator || false,
+      active: req.body.active !== undefined ? req.body.active : true,
+      registration_date: new Date()
     });
 
     return res.status(201).json(novoAtendente);
@@ -79,7 +82,7 @@ const updateAtendente = async (req, res) => {
     const atendente = await Attendant.findOne({
       where: { 
         id: req.params.id,
-        companyId: req.empresa.id
+        company_id: req.empresa.id
       }
     });
     
@@ -87,12 +90,11 @@ const updateAtendente = async (req, res) => {
       return res.status(404).json({ error: 'Atendente não encontrado' });
     }
     
-    // Verificar se a especialidade existe e pertence à empresa
-    if (req.body.specialtyId) {
+    if (req.body.specialty_id) {
       const especialidade = await Specialty.findOne({
         where: { 
-          id: req.body.specialtyId,
-          companyId: req.empresa.id
+          id: req.body.specialty_id,
+          company_id: req.empresa.id
         }
       });
       
@@ -103,10 +105,12 @@ const updateAtendente = async (req, res) => {
     
     await atendente.update({
       name: req.body.name || atendente.name,
+      specialty_id: req.body.specialty_id || atendente.specialty_id,
+      phone_mobile: req.body.phone_mobile || atendente.phone_mobile,
       email: req.body.email || atendente.email,
-      phone: req.body.phone || atendente.phone,
-      specialtyId: req.body.specialtyId || atendente.specialtyId,
-      isActive: req.body.isActive !== undefined ? req.body.isActive : atendente.isActive
+      hiring_date: req.body.hiring_date || atendente.hiring_date,
+      administrator: req.body.administrator !== undefined ? req.body.administrator : atendente.administrator,
+      active: req.body.active !== undefined ? req.body.active : atendente.active
     });
     
     return res.json(atendente);
@@ -121,7 +125,7 @@ const deleteAtendente = async (req, res) => {
     const atendente = await Attendant.findOne({
       where: { 
         id: req.params.id,
-        companyId: req.empresa.id
+        company_id: req.empresa.id
       }
     });
     

@@ -19,46 +19,32 @@ const sequelize = new Sequelize(
 
 // Import models
 const Company = require('./Company')(sequelize, DataTypes);
-const Customer = require('./Customer')(sequelize, DataTypes);
+const Client = require('./Client')(sequelize, DataTypes);
 const Attendant = require('./Attendant')(sequelize, DataTypes);
 const Specialty = require('./Specialty')(sequelize, DataTypes);
 const Appointment = require('./Appointment')(sequelize, DataTypes);
 const Schedule = require('./Schedule')(sequelize, DataTypes);
+const Config = require('./Config')(sequelize, DataTypes);
 
-// Define relationships
-Company.hasMany(Customer, { foreignKey: 'companyId' });
-Customer.belongsTo(Company, { foreignKey: 'companyId' });
-
-Company.hasMany(Attendant, { foreignKey: 'companyId' });
-Attendant.belongsTo(Company, { foreignKey: 'companyId' });
-
-Company.hasMany(Specialty, { foreignKey: 'companyId' });
-Specialty.belongsTo(Company, { foreignKey: 'companyId' });
-
-Attendant.belongsTo(Specialty, { foreignKey: 'specialtyId' });
-Specialty.hasMany(Attendant, { foreignKey: 'specialtyId' });
-
-Company.hasMany(Appointment, { foreignKey: 'companyId' });
-Appointment.belongsTo(Company, { foreignKey: 'companyId' });
-
-Customer.hasMany(Appointment, { foreignKey: 'customerId' });
-Appointment.belongsTo(Customer, { foreignKey: 'customerId' });
-
-Attendant.hasMany(Appointment, { foreignKey: 'attendantId' });
-Appointment.belongsTo(Attendant, { foreignKey: 'attendantId' });
-
-Attendant.hasMany(Schedule, { foreignKey: 'attendantId' });
-Schedule.belongsTo(Attendant, { foreignKey: 'attendantId' });
-
+// Define the db object first
 const db = {
   sequelize,
   Sequelize,
   Company,
-  Customer,
+  Client,
   Attendant,
   Specialty,
   Appointment,
-  Schedule
+  Schedule,
+  Config
 };
+
+// Define associations
+Object.values([Company, Client, Attendant, Specialty, Appointment, Schedule, Config])
+  .forEach((model) => {
+    if (model.associate) {
+      model.associate(db);
+    }
+  });
 
 module.exports = db;

@@ -1,12 +1,13 @@
 const { Schedule, Attendant } = require('../models');
+const { v4: uuidv4 } = require('uuid');
 
 const getAllHorarios = async (req, res) => {
   try {
     const horarios = await Schedule.findAll({
       include: [{
         model: Attendant,
-        as: 'atendente',
-        where: { companyId: req.empresa.id }
+        as: 'attendant',
+        where: { company_id: req.empresa.id }
       }]
     });
     
@@ -25,8 +26,8 @@ const getHorarioById = async (req, res) => {
       },
       include: [{
         model: Attendant,
-        as: 'atendente',
-        where: { companyId: req.empresa.id }
+        as: 'attendant',
+        where: { company_id: req.empresa.id }
       }]
     });
 
@@ -43,11 +44,10 @@ const getHorarioById = async (req, res) => {
 
 const createHorario = async (req, res) => {
   try {
-    // Verificar se o atendente existe e pertence à empresa
     const atendente = await Attendant.findOne({
       where: { 
-        id: req.body.attendantId,
-        companyId: req.empresa.id
+        id: req.body.attendant_id,
+        company_id: req.empresa.id
       }
     });
 
@@ -56,11 +56,13 @@ const createHorario = async (req, res) => {
     }
 
     const novoHorario = await Schedule.create({
-      attendantId: req.body.attendantId,
-      dayOfWeek: req.body.dayOfWeek,
-      startTime: req.body.startTime,
-      endTime: req.body.endTime,
-      isActive: req.body.isActive !== undefined ? req.body.isActive : true
+      id: uuidv4(),
+      attendant_id: req.body.attendant_id,
+      day_of_week: req.body.day_of_week,
+      start_time: req.body.start_time,
+      end_time: req.body.end_time,
+      active: req.body.active !== undefined ? req.body.active : true,
+      registration_date: new Date()
     });
 
     return res.status(201).json(novoHorario);
@@ -72,13 +74,12 @@ const createHorario = async (req, res) => {
 
 const updateHorario = async (req, res) => {
   try {
-    // Verificar se o horário existe
     const horario = await Schedule.findOne({
       where: { id: req.params.id },
       include: [{
         model: Attendant,
-        as: 'atendente',
-        where: { companyId: req.empresa.id }
+        as: 'attendant',
+        where: { company_id: req.empresa.id }
       }]
     });
     
@@ -86,12 +87,11 @@ const updateHorario = async (req, res) => {
       return res.status(404).json({ error: 'Horário não encontrado' });
     }
     
-    // Se estiver atualizando o atendente, verificar se o novo atendente existe
-    if (req.body.attendantId && req.body.attendantId !== horario.attendantId) {
+    if (req.body.attendant_id && req.body.attendant_id !== horario.attendant_id) {
       const atendente = await Attendant.findOne({
         where: { 
-          id: req.body.attendantId,
-          companyId: req.empresa.id
+          id: req.body.attendant_id,
+          company_id: req.empresa.id
         }
       });
       
@@ -101,11 +101,11 @@ const updateHorario = async (req, res) => {
     }
     
     await horario.update({
-      attendantId: req.body.attendantId || horario.attendantId,
-      dayOfWeek: req.body.dayOfWeek || horario.dayOfWeek,
-      startTime: req.body.startTime || horario.startTime,
-      endTime: req.body.endTime || horario.endTime,
-      isActive: req.body.isActive !== undefined ? req.body.isActive : horario.isActive
+      attendant_id: req.body.attendant_id || horario.attendant_id,
+      day_of_week: req.body.day_of_week || horario.day_of_week,
+      start_time: req.body.start_time || horario.start_time,
+      end_time: req.body.end_time || horario.end_time,
+      active: req.body.active !== undefined ? req.body.active : horario.active
     });
     
     return res.json(horario);
@@ -121,8 +121,8 @@ const deleteHorario = async (req, res) => {
       where: { id: req.params.id },
       include: [{
         model: Attendant,
-        as: 'atendente',
-        where: { companyId: req.empresa.id }
+        as: 'attendant',
+        where: { company_id: req.empresa.id }
       }]
     });
     
