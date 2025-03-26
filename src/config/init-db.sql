@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS public.companies (
     email VARCHAR(255) COLLATE pg_catalog."default",
     active BOOLEAN NOT NULL DEFAULT TRUE,
     registration_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    api_key UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000'::UUID,
+    api_key TEXT COLLATE pg_catalog."default",
     CONSTRAINT pk_companies PRIMARY KEY (id)
 );
 

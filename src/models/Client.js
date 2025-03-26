@@ -11,51 +11,53 @@ module.exports = (sequelize, DataTypes) => {
     },
     cpf_cnpj: {
       type: DataTypes.STRING(20),
-      allowNull: true
+      allowNull: true,
+      unique: true
     },
     birth_date: {
       type: DataTypes.DATE,
       allowNull: true
     },
     phone_mobile: {
-      type: DataTypes.STRING(20),
+      type: DataTypes.TEXT,
       allowNull: false
     },
     email: {
       type: DataTypes.STRING(255),
-      allowNull: false
+      allowNull: true,
+      unique: true
     },
     address_street: {
-      type: DataTypes.STRING(150),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     address_city: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     address_state: {
-      type: DataTypes.STRING(2),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     address_neighborhood: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     address_zip: {
-      type: DataTypes.STRING(9),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     address_country: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.TEXT,
       allowNull: true,
       defaultValue: 'Brasil'
     },
     address_complement: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     address_number: {
-      type: DataTypes.STRING(20),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     notes: {
@@ -63,12 +65,12 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     password: {
-      type: DataTypes.STRING(255),
-      allowNull: true
+      type: DataTypes.TEXT,
+      allowNull: false
     },
     active: {
       type: DataTypes.BOOLEAN,
-      allowNull: false,
+      allowNull: true,
       defaultValue: true
     },
     registration_date: {

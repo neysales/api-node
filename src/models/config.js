@@ -30,11 +30,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true
       },
       minio_bucket: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.TEXT,
         allowNull: true
       },
       minio_port: {
-        type: DataTypes.STRING(10),
+        type: DataTypes.TEXT,
         allowNull: true
       },
       minio_access_key: {
@@ -50,7 +50,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true
       },
       email: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.TEXT,
         allowNull: true
       },
       email_password: {
@@ -58,11 +58,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true
       },
       email_smtp: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.TEXT,
         allowNull: true
       },
       email_port: {
-        type: DataTypes.STRING(10),
+        type: DataTypes.TEXT,
         allowNull: true
       },
       email_text_scheduled: {
@@ -82,7 +82,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true
       },
       ai_provider: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.TEXT,
         allowNull: true,
         defaultValue: 'openai'
       },
@@ -91,7 +91,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true
       },
       ai_model: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.TEXT,
         allowNull: true,
         defaultValue: 'gpt-3.5-turbo'
       },

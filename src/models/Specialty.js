@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     description: {
       type: DataTypes.TEXT,
-      allowNull: true
+      allowNull: false
     },
     company_id: {
       type: DataTypes.UUID,

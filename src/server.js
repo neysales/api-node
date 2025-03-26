@@ -12,14 +12,14 @@ require('dotenv').config();
 const app = express();
 
 // Import routes
-const companyRoutes = require('./routes/empresaRoutes');
-const clientRoutes = require('./routes/clienteRoutes');
-const attendantRoutes = require('./routes/atendenteRoutes');
-const appointmentRoutes = require('./routes/agendamentoRoutes');
-const specialtyRoutes = require('./routes/especialidadeRoutes');
-const scheduleRoutes = require('./routes/horarioRoutes');
+const companyRoutes = require('./routes/companyRoutes');
+const clientRoutes = require('./routes/clientRoutes');
+const attendantRoutes = require('./routes/attendantRoutes');
+const appointmentRoutes = require('./routes/appointmentRoutes');
+const specialtyRoutes = require('./routes/specialtyRoutes');
+const scheduleRoutes = require('./routes/scheduleRoutes');
 const configRoutes = require('./routes/configRoutes');
-const aiAppointmentRoutes = require('./routes/aiAgendamentoRoutes');
+const aiAppointmentRoutes = require('./routes/aiAppointmentRoutes');
 const companyCheckRoutes = require('./routes/company-check');
 const aiConfigRoutes = require('./routes/aiConfigRoutes');
 

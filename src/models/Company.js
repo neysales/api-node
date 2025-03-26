@@ -10,7 +10,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     name: {
       type: DataTypes.STRING(150),
-      allowNull: false
+      allowNull: false,
+      field: 'name' 
     },
     activity: {
       type: DataTypes.STRING(150),
@@ -21,58 +22,58 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     address_street: {
-      type: DataTypes.STRING(150),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     address_city: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     address_state: {
-      type: DataTypes.STRING(2),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     address_neighborhood: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     address_zip: {
-      type: DataTypes.STRING(9),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     address_country: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.TEXT,
       allowNull: true,
       defaultValue: 'Brasil'
     },
     address_complement: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     address_number: {
-      type: DataTypes.STRING(20),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     phone_landline: {
-      type: DataTypes.STRING(20),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     phone_mobile: {
-      type: DataTypes.STRING(20),
-      allowNull: false
+      type: DataTypes.TEXT,
+      allowNull: true
     },
     phone_whatsapp: {
-      type: DataTypes.STRING(20),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     email: {
       type: DataTypes.STRING(255),
-      allowNull: false
+      allowNull: true
     },
     api_key: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.TEXT,
       allowNull: false,
-      unique: true
+      defaultValue: '00000000-0000-0000-0000-000000000000'
     },
     active: {
       type: DataTypes.BOOLEAN,
